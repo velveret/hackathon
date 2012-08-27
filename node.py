@@ -5,14 +5,15 @@ from sympy import *
 
 class Node(object):
     __metaclass__ = ABCMeta
+    objId = ""
     x = Symbol('x')
     y = Symbol('y')
     xd = Symbol('xd')
     yd = Symbol('yd')
     m = 0.0
     
-    def __init__(self, newM):
-        self.m = newM
+    def __init__(self, newId, newM):
+        self.objId, self.m = newId, newM
     @abstractmethod
     def __type__(self):
         pass
@@ -20,8 +21,8 @@ class Node(object):
         return self.__type__()
 
 class Mass(Node):
-    def __init__(self, newM):
-        super(Mass, self).__init__(newM)
+    def __init__(self, newId, newM):
+        super(Mass, self).__init__(newId, newM)
     def __type__(self):
         return "Mass"
 
@@ -36,8 +37,8 @@ class Segment(Node):
     r = 0.0
     L = 0.0
     
-    def __init__(self, newM, newTh, newI, newR, newL):
-        super(Mass, self).__init__(newM)
+    def __init__(self, newId, newM, newTh, newI, newR, newL):
+        super(Mass, self).__init__(newId, newM)
         self.th = newTh
         self.I = newI
         self.r = newR
