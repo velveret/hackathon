@@ -6,14 +6,14 @@ from sympy import *
 class Node(object):
     __metaclass__ = ABCMeta
     objId = ""
-    x = Symbol('x')
-    y = Symbol('y')
-    xd = Symbol('xd')
-    yd = Symbol('yd')
     m = 0.0
     
     def __init__(self, newId, newM):
         self.objId, self.m = newId, newM
+        self.x = Symbol("x_" + self.objId)
+        self.y = Symbol("y_" + self.objId)
+        self.xd = Symbol("xd_" +self. objId)
+        self.yd = Symbol("yd_" + self.objId)
     @abstractmethod
     def __type__(self):
         pass
@@ -28,11 +28,6 @@ class Mass(Node):
 
 class Segment(Node):
     th = 0.0
-    thd = Symbol('thd')
-    x0 = Symbol('x0')
-    y0 = Symbol('y0')
-    xf = Symbol('xf')
-    yf = Symbol('yf')
     I = 0.0
     r = 0.0
     L = 0.0
@@ -43,6 +38,11 @@ class Segment(Node):
         self.I = newI
         self.r = newR
         self.L = newL
+        self.thd = Symbol("thd_" + self.objId)
+        self.x0 = Symbol("x0_" + self.objId)
+        self.y0 = Symbol("y0_" + self.objId)
+        self.xf = Symbol("xf_" + self.objId)
+        self.yf = Symbol("yf_" + self.objId)
     def __type__(self):
         return "Segment"
 
