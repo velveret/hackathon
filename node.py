@@ -32,7 +32,7 @@ class Segment(Node):
     L = 0.0
     
     def __init__(self, newId, newM, newI, newR, newL):
-        super(Mass, self).__init__(newId, newM)
+        super(Segment, self).__init__(newId, newM)
         self.I = newI
         self.r = newR
         self.L = newL
