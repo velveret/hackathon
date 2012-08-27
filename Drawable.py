@@ -3,6 +3,7 @@ from abc import abstractmethod
 from abc import ABCMeta
 import pygame as pg
 import numpy as np
+from math import atan2,sin,cos
 
 pg.init()
 blackColor = pg.Color(0, 0, 0)
@@ -47,8 +48,18 @@ class Segment(Drawable):
         pg.draw.line(surface, blueColor, (self.x0, self.y0), (self.x1, self.y1))
     def getLength(self):
         return np.sqrt((self.x0-self.x1)**2 + (self.y0-self.y1)**2)
-    def getTheta(self):
-        pass
+    # set switch to True to use (x1,y1) as the reference point to be shifted
+    # to the origin
+    # returns angle relative to (0,0)->(0,-pi/2) 
+    def getTheta(self, switch=False):
+        if switch:
+            newX = self.x0 - self.x1
+            newY = self.y0 - self.y1
+            return atan2(newX, newY)-np.pi/2.0
+        else:
+            newX = self.x1 - self.x0
+            newY = self.y1 - self.y0
+            return atan2(newX, newY)-np.pi/2.0
     def setX0(self, newX):
         self.x0 = newX
     def setX1(self, newX):
@@ -66,11 +77,21 @@ class Segment(Drawable):
         else:
             self.setX1(self.x0 + (self.x1 - self.x0) / ratio)
             self.setY1(self.y0 + (self.y1 - self.y0) / ratio)
-    def setTheta(self, theta):
-        pass
+    # set switch to True to use (x1,y1) as the fixed point    
+    def rotate(self, theta, switch=False):
+        if switch:
+            newX = self.x0 - self.x1
+            newY = self.y0 - self.y1  
+            newX, newY = newX * cos(theta) - newY * sin(theta) + self.x1, newX * sin(theta) + newY * cos(theta) + self.y1
+            self.setX0(newX)
+            self.setY0(newY)
+        else:
+            newX = self.x1 - self.x0
+            newY = self.y1 - self.y0  
+            newX, newY = newX * cos(theta) - newY * sin(theta) + self.x0, newX * sin(theta) + newY * cos(theta) + self.y0
+            self.setX1(newX)
+            self.setY1(newY)
 
 Drawable.register(Point)
 Drawable.register(Segment)
-
-
     
