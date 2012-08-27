@@ -15,13 +15,13 @@ class Node(object):
         self.m = newM
     @abstractmethod
     def __type__(self):
-        return "Node"
+        pass
     def get_type(self):
         return self.__type__()
 
 class Mass(Node):
     def __init__(self, newM):
-        super(newM)
+        super(Mass, self).__init__(newM)
     def __type__(self):
         return "Mass"
 
@@ -37,7 +37,7 @@ class Segment(Node):
     L = 0.0
     
     def __init__(self, newM, newTh, newI, newR, newL):
-        super(newM)
+        super(Mass, self).__init__(newM)
         self.th = newTh
         self.I = newI
         self.r = newR
