@@ -27,17 +27,16 @@ class Mass(Node):
         return "Mass"
 
 class Segment(Node):
-    th = 0.0
     I = 0.0
     r = 0.0
     L = 0.0
     
-    def __init__(self, newId, newM, newTh, newI, newR, newL):
+    def __init__(self, newId, newM, newI, newR, newL):
         super(Mass, self).__init__(newId, newM)
-        self.th = newTh
         self.I = newI
         self.r = newR
         self.L = newL
+        self.th = Symbol("th" + self.objId)
         self.thd = Symbol("thd_" + self.objId)
         self.x0 = Symbol("x0_" + self.objId)
         self.y0 = Symbol("y0_" + self.objId)
