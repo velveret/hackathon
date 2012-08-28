@@ -12,15 +12,16 @@ from sympy import *
 
 class Node(object):
     __metaclass__ = ABCMeta
-    objId = ""
     m = 0.0
+    fixed = False
     
-    def __init__(self, xSym, ySym, xdSym, ydSym, newId, newM):
-        self.objId, self.m = newId, newM
+    def __init__(self, xSym, ySym, xdSym, ydSym, newM, isFixed):
+        self.m = newM
         self.x = xSym # Symbol("x_" + self.objId)
         self.y = ySym # Symbol("y_" + self.objId)
         self.xd= xdSym # Symbol("xd_" +self. objId)
         self.yd= ydSym # Symbol("yd_" + self.objId)
+        self.fixed = isFixed
     @abstractmethod
     def __type__(self):
         pass
@@ -28,8 +29,8 @@ class Node(object):
         return self.__type__()
 
 class Mass(Node):
-    def __init__(self, newId, newM):
-        super(Mass, self).__init__(newId, newM)
+    def __init__(self, xSym, ySym, xdSym, ydSym, newM, isFixed):
+        super(Mass, self).__init__(xSym, ySym, xdSym, ydSym, newM, isFixed)
     def __type__(self):
         return "Mass"
 
@@ -38,8 +39,8 @@ class Segment(Node):
     r = 0.0
     L = 0.0
     
-    def __init__(self, thSym, thdSym, newId, newM, newI, newR, newL):
-        super(Segment, self).__init__(newId, newM)
+    def __init__(self, xSym, ySym, xdSym, ydSym, thSym, thdSym, newM, newI, newR, newL, isFixed):
+        super(Segment, self).__init__(xSym, ySym, xdSym, ydSym, newM, isFixed)
         self.I = newI
         self.r = newR
         self.L = newL
