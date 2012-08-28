@@ -37,47 +37,60 @@ def calcEL(L, coordinates):
         ddL_dqdot_dt=sp.diff(dL_dqdot,t).subs(fromTimeDependent)
         EL.append(ddL_dqdot_dt-dL_dq)
     qdotdot=[sp.symbols(str(qdot)+"dot") for (q,qdot) in coordinates]
-    for EL_i in EL:
-        if not any([qdotdot_i in EL_i.atoms() for qdotdot_i in qdotdot]):
-            ELNew=EL_i.subs(toTimeDependent)
+    for i in range(len(EL)):
+        while not any([qdotdot_i in EL[i].atoms() for qdotdot_i in qdotdot]):
+            ELNew=EL[i].subs(toTimeDependent)
             ELNew=sp.diff(ELNew,t).subs(fromTimeDependent)
             print ELNew
-            EL.append(ELNew)
+            EL[i]=ELNew
     return EL
 def makeOdeFunc(EL,coords):
     """
     coords should be of the same form as input to calcEL
     """
     qdotdot=[sp.symbols(str(qdot)+"dot") for (q,qdot) in coords]
-    """
     hasSecondDeriv=[any((qdotdot_i in EL_i for EL_i in EL))
             for qdotdot_i in qdotdot]
-    print hasSecondDeriv
     hasFirstDeriv=[any((qdot in EL_i for EL_i in EL))
             for (q,qdot) in coords]
-    print hasFirstDeriv
-    filter=[None]*2*len(coords)
-    filter[::2]=[d1 or d2 for (d1,d2) in zip(hasFirstDeriv,hasSecondDeriv)]
-    filter[1::2]=hasSecondDeriv
-    print filter
-    """
-    secondDerivs=sp.solve(EL,qdotdot)
-    print secondDerivs
-    if not secondDerivs:
+    solveForVars=[]
+    for ((q_i,qdot_i),qdotdot_i,fd,sd) in \
+            zip(coords,qdotdot,hasFirstDeriv,hasSecondDeriv):
+        if sd:
+            solveForVars.append(qdotdot_i)
+        elif fd:
+            solveForVars.append(qdot_i)
+        else:
+            solveForVars.append(q_i)
+    solvedVars=sp.solve(EL,solveForVars)
+    if not solvedVars:
         raise Exception("No solutions for accelerations")
-    qdotdotFunc=[]
-    for qdotdot_i in qdotdot:    
-        qdotdotFunc.append(sp.lambdify(flatten(coords),
-                secondDerivs[qdotdot_i]))
-	def odeFunc(coords,t):
+    funcList=[]
+    inputs=[]
+    for (i,((q_i,qdot_i),qdotdot_i)) in enumerate(zip(coords,qdotdot)):
+        if qdotdot_i in solveForVars:
+            inputs.append(q_i)
+            inputs.append(qdot_i)
+        elif qdot_i in solveForVars:
+            inputs.append(q_i)
+    print inputs
+    for (i,((q_i,qdot_i),qdotdot_i)) in enumerate(zip(coords,qdotdot)):
+        if qdotdot_i in solveForVars:
+            funcList.append((lambda i: lambda x:x[i])(i))
+            funcList.append((lambda f: lambda x: f(*x))(sp.lambdify(inputs,
+                    solvedVars[qdotdot_i])))
+        elif qdot_i in solveForVars:
+            funcList.append(sp.lambdify(inputs,
+                    solvedVars[qdot_i]))
+    def odeFunc(coords,t=None):
          """
          Takes a list of coordinates of the form [x,xdot,y,ydot]
          Returns a list of time derivatives for those coordinates
+         Note that if a variable only has first derivative terms, it won't
+         have the qdot term, and if it's directly determined in terms of other
+         variables it won't show up at all.
          """		
-         output=[None]*len(coords)
-         output[::2]=coords[1::2]
-         output[1::2]=[f(*coords) for f in qdotdotFunc]
-         return output
+         return [f(coords) for f in funcList]
     return odeFunc
 def solveSystem(L,coordinates,initialConditions):
     """
@@ -98,6 +111,7 @@ def solveSystem(L,coordinates,initialConditions):
 def numTimeEvolve(L,coordinates,initialConditions,t):
     EL=calcEL(L, coordinates)
     F=makeOdeFunc(EL,coordinates)
+    print "Starting time Evolution"
     return integrate.odeint(F,flatten(initialConditions),t)
 def flatten(x):
     result = []
