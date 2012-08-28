@@ -47,82 +47,82 @@ class CartesianGridButton(Button):
     def __init__(self):
         self.active = True
         self.icon = pygame.image.load('images/gridIcon.png').convert()
-        self.ID = 1
+        self.ID = "cartesianGrid"
         Button.__init__(self)
         
 class PolarGridButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/polarIcon.png').convert()
-        self.ID = 2
+        self.ID = "polarGrid"
         Button.__init__(self)
         
 class SnapToGridButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/snapIcon.png').convert()
-        self.ID = 3
+        self.ID = "snapToGrid"
         Button.__init__(self)
         
 class SnapToPointButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/snapPointIcon.png').convert()
-        self.ID = 4
+        self.ID = "snapToPoint"
         Button.__init__(self)
         
 class RunButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/runIcon.png').convert()
-        self.ID = 5
+        self.ID = "run"
         Button.__init__(self)
         
 class PauseButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/pauseIcon.png').convert()
-        self.ID = 6
+        self.ID = "pause"
         Button.__init__(self)
         
 class RestartButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/restartIcon.png').convert()
-        self.ID = 7
+        self.ID = "restart"
         Button.__init__(self)
         
 class PointButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/pointIcon.png').convert()
-        self.ID = 8
+        self.ID = "point"
         Button.__init__(self)
         
 class SegmentButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/segmentIcon.png').convert()
-        self.ID = 9
+        self.ID = "segment"
         Button.__init__(self)
         
 class UndoButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/undoIcon.png').convert()
-        self.ID = 10
+        self.ID = "undo"
         Button.__init__(self)
 
 class PinButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/pinIcon.png').convert()
-        self.ID = 11
+        self.ID = "pin"
         Button.__init__(self)
         
 class DeleteButton(Button):
     def __init__(self):
         self.active = False
         self.icon = pygame.image.load('images/deleteIcon.png').convert()
-        self.ID = 12
+        self.ID = "delete"
         Button.__init__(self)

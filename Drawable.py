@@ -59,8 +59,14 @@ class Point(Drawable):
     def __init__(self, surface, newX, newY, newM=1.0, isFixed=False, newR=10):
         super(Point, self).__init__(surface, newX, newY, newM, isFixed)
         self.r = newR
+        self.isFixed = isFixed
     def draw(self):
-        pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
+        if self.isFixed:
+            pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
+            pg.draw.line(self.surface, (255,0,0), (self.x-self.r, self.y), (self.x+self.r, self.y))
+            pg.draw.line(self.surface, (255,0,0), (self.x, self.y-self.r), (self.x, self.y+self.r))
+        else:
+            pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
     def setR(self, newR):
         self.r = newR
     def translate(self):
