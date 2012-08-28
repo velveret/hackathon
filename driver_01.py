@@ -22,21 +22,30 @@ class Driver:
         
         # Rewrite the coordinates of the nodes in terms of the 
         # generalized coordinates
+        
+#        print Diagram        
+        
         head = find_head(Diagram)
         dfs(Diagram, head)
         
-        print "*****************"
-        print n2.y
-        print n2.yd
-        print "*****************"
-        print ""
+#        print Diagram
+#        
+#        for node in Diagram.keys():
+#            print node.__dict__
+    
+#        
+#        print "*****************"
+#        print n2.y
+#        print n2.yd
+#        print "*****************"
+#        print ""
         
-        #Compute the lagrangian
-        dgm = [n1, n2]
-        print n1.x, "\n", n1.xd
+        # Compute the lagrangian
+        dgm = [n for n in Diagram.keys()]
+#        print n1.x, "\n", n1.xd
         L = sum([lagrange_01(n) for n in dgm])
         L = sp.simplify(sp.expand(L))
-        print "\n\n\nL is \n", L, "\n\n\n"
+#        print "\n\n\nL is \n", L, "\n\n\n"
         
         # Compute and simulate differential equatoins
         #tAxis=np.linspace(0,50,10000)

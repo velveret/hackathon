@@ -30,11 +30,11 @@ class StaticDrawing():
         else:
             return False
     @staticmethod
-    def makeDiagram(drawables):
+    def makeDiagram(drawables, origin):
         drawingToNode = {}
         diagram = {}
         for obj in drawables:
-            node = obj.translate()
+            node = obj.translate(origin)
             drawingToNode[obj] = node
             diagram[node] = set()
         unvisited = copy.copy(drawables)
@@ -76,7 +76,7 @@ class Drawable(object):
     def setFixed(self, isFixed):
         self.fixed = isFixed
     @abstractmethod
-    def translate(self):
+    def translate(self, origin):
         pass
     def makeSym(self,prefix=""):
         return Symbol(prefix + "_" + self.objId)
@@ -94,9 +94,9 @@ class Point(Drawable):
     def __init__(self, surface, newX, newY, newM=1.0, isFixed=False, newR=10):
         super(Point, self).__init__(surface, newX, newY, newM, isFixed)
         self.r = newR
-        self.isFixed = isFixed
+#        self.isFixed = isFixed
     def draw(self):
-        if self.isFixed:
+        if self.fixed:
             pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
             pg.draw.line(self.surface, (255,0,0), (self.x-self.r, self.y), (self.x+self.r, self.y), 3)
             pg.draw.line(self.surface, (255,0,0), (self.x, self.y-self.r), (self.x, self.y+self.r), 3)
@@ -106,8 +106,11 @@ class Point(Drawable):
         return "Point"
     def setR(self, newR):
         self.r = newR
-    def translate(self):
-        return Mass(self.makeSym("x"), self.makeSym("y"), self.makeSym("xd"),\
+    def translate(self, origin):
+        if self.fixed:
+            return Mass(self.x-origin[0], self.y-origin[1], 0, 0,self.objId, self.m, self.fixed)
+        else:
+            return Mass(self.makeSym("x"), self.makeSym("y"), self.makeSym("xd"),\
             self.makeSym("yd"),self.objId, self.m, self.fixed)
 
 # parameters:
@@ -192,7 +195,7 @@ class Segment(Drawable):
                 newX * sin(theta) + newY * cos(theta) + self.y0
             self.setX1(newX)
             self.setY1(newY)
-    def translate(self):
+    def translate(self, origin):
         return node_02.Segment(self.makeSym("x"), self.makeSym("y"),\
             self.makeSym("xd"),self.makeSym("yd"),self.makeSym("th"),\
             self.makeSym("thd"), self.objId, self.m, self.I, self.r,\

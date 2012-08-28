@@ -75,17 +75,20 @@ def dfs(diagram, head):
                     current.xd= parents[current].xd - parents[current].L*sp.sin(parents[current].th)*parents[current].thd
                     current.yd= parents[current].yd + parents[current].L*sp.cos(parents[current].th)*parents[current].thd                    
             else:
-                if current.fixed:
-                    current.x0= 0.0
-                    current.y0= 0.0
-                else:
-                    print "CHECK ", current.x0
-                current.xf= current.x0 + current.L*sp.cos(current.th)
-                current.yf= current.y0 + current.L*sp.sin(current.th)
-                current.x = current.x0 + current.r*current.L*sp.cos(current.th)
-                current.y = current.y0 + current.r*current.L*sp.sin(current.th)
-                current.xd= - current.r*current.L*sp.sin(current.th) * current.thd
-                current.yd=   current.r*current.L*sp.cos(current.th) * current.thd
+                if current.get_type()=="Segment" and not current.fixed:
+                    current.xf= current.x0 + current.L*sp.cos(current.th)
+                    current.yf= current.y0 + current.L*sp.sin(current.th)
+                    current.x = current.x0 + current.r*current.L*sp.cos(current.th)
+                    current.y = current.y0 + current.r*current.L*sp.sin(current.th)
+                    current.xd= - current.r*current.L*sp.sin(current.th) * current.thd
+                    current.yd=   current.r*current.L*sp.cos(current.th) * current.thd
+#                elif current.get_type()=="Mass" and current.fixed:
+#                    current.x = 
+#                    current.y = 
+#                    current.xd= 0.0
+#                    current.yd= 0.0
+
+#                else: # 1nt.x = 
 #            print current.objId
 #            print current.x
 #            print current.y

@@ -36,6 +36,8 @@ class GraphicsScreen(pygame.Surface):
         self.buttons["snapToGrid"].setState(self.snapGrid)
         self.buttons["snapToPoint"].setState(self.snapPoint)
         
+        self.origin = self.polarOrigin
+        
         self.allGeometry = []
         self.prevGeometry = []
         
@@ -112,7 +114,7 @@ class GraphicsScreen(pygame.Surface):
             
         elif buttonID == "run":
             if len(self.allGeometry) > 0:
-                diagram = StaticDrawing.makeDiagram(self.allGeometry)
+                diagram = StaticDrawing.makeDiagram(self.allGeometry, self.origin)
                 Driver.drive(diagram)
             self.buttons["run"].setState(True)
             
