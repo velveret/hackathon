@@ -2,7 +2,35 @@ import pygame
 import wx
 import os
 import Buttons
-from math import ceil, pi, sin, cos, sqrt
+from math import ceil, pi, sin, cos, sqrt, atan2
+from Drawable import Point, Segment
+
+#Buttons
+""" 
+(IDs)
+1  ==> Cartesian
+2  ==> Polar
+3  ==> Snap To Grid
+4  ==> Snap To Point
+5  ==> Run
+6  ==> Pause
+7  ==> Restart
+8  ==> Point
+9  ==> Segment
+10 ==> Undo
+
+(List)
+0  ==> Cartesian
+1  ==> Polar
+2  ==> Snap To Grid
+3  ==> Snap To Point
+4  ==> Restart
+5  ==> Run
+6  ==> Pause
+7  ==> Point
+8  ==> Segment
+9  ==> Undo
+"""
 
 class GraphicsScreen(pygame.Surface):
     def __init__(self, size, buttons):
@@ -10,26 +38,127 @@ class GraphicsScreen(pygame.Surface):
         self.size = size
         self.buttons = buttons
         
-        self.snap = True
+        self.pointAdding = False
+        
+        self.segmentAdding = False
+        self.segmentAddingStage = 0
+        
+        self.snapGrid = True
+        
+        self.snapPoint = True
         
         self.cartesian = True
-        self.cartesianOrigin = (100,100)
+        self.cartesianOrigin = (self.size[0]/2,self.size[1]/2)
+        self.cartesianSpacing = 20
         
         self.polar = False
-        self.polarOrigin = (300,300)
+        self.polarOrigin = (self.size[0]/2,self.size[1]/2)
+        self.polarRSpacing = 20
+        self.polarThetaSpacing = pi/12
+                        
+        self.buttons[0].setState(self.cartesian)
+        self.buttons[1].setState(self.polar)
+        self.buttons[2].setState(self.snapGrid)
+        self.buttons[3].setState(self.snapPoint)
+        
+        self.allGeometry = []
         
     def buttonPressed(self, buttonID):
-        if buttonID == 1:
+        if buttonID == 1: #Cartesian
             self.cartesian = True
             self.polar = False
             self.buttons[0].setState(True)
             self.buttons[1].setState(False)
             
-        elif buttonID == 2:
+        elif buttonID == 2: #Polar
             self.cartesian = False
             self.polar = True
             self.buttons[0].setState(False)
             self.buttons[1].setState(True)
+            
+        elif buttonID == 3: #Snap To Grid
+            self.snapGrid = not self.snapGrid
+            self.buttons[2].setState(self.snapGrid)
+            
+        elif buttonID == 4: #Snap To Point
+            self.snapPoint = not self.snapPoint
+            self.buttons[3].setState(self.snapPoint)
+            
+            
+        if buttonID == 8: #Point Adding
+            if self.pointAdding:
+                self.pointAdding = False
+            else:
+                self.pointAdding = True
+                self.segmentAdding = False
+                self.buttons[8].setState(False)
+            self.buttons[7].setState(self.pointAdding)
+            
+        elif buttonID == 9: #Segment Adding
+            if self.segmentAdding:
+                self.segmentAdding = False
+            else:
+                self.segmentAdding = True
+                self.pointAdding = False
+                self.buttons[7].setState(False)
+            self.buttons[8].setState(self.segmentAdding)
+            
+        elif buttonID == 10: #Undo
+            if len(self.allGeometry) > 0:
+                self.allGeometry.pop()    
+            self.buttons[9].setState(True)
+            
+    def snap(self, x, y):
+        if self.snapGrid:        
+            if self.cartesian:
+                x = int(round(float(x)/self.cartesianSpacing)*self.cartesianSpacing)
+                y = int(round(float(y)/self.cartesianSpacing)*self.cartesianSpacing)
+            elif self.polar:
+                r = self.dist((x,y), self.polarOrigin)
+                theta = atan2(y-self.polarOrigin[1], x-self.polarOrigin[0])
+                r = int(round(float(r)/self.polarRSpacing)*self.polarRSpacing)
+                theta = round(theta/self.polarThetaSpacing)*self.polarThetaSpacing
+                x = int(r*cos(theta)) + self.polarOrigin[0]
+                y = int(r*sin(theta)) + self.polarOrigin[1]
+        
+        return x, y
+        
+    def addPoint(self, x, y):
+        newPoint = Point(self, x, y)
+        self.allGeometry.append(newPoint)
+        
+    def startSegment(self, x, y):
+        self.currentSegment = Segment(self, x, y, x, y)
+        self.segmentAddingStage = 1
+        self.allGeometry.append(self.currentSegment)
+    
+    def updateSegment(self, x, y):
+        self.currentSegment.setX1(x)
+        self.currentSegment.setY1(y)
+        
+    def finishSegment(self, x, y):
+        self.currentSegment.setX1(x)
+        self.currentSegment.setY1(y)
+        self.segmentAddingStage = 0
+        del(self.currentSegment)
+            
+    def mousePressed(self, mx, my):
+        if self.pointAdding:
+            mx, my = self.snap(mx, my)
+            self.addPoint(mx,my)
+        elif self.segmentAdding:
+            mx, my = self.snap(mx, my)
+            self.startSegment(mx, my)
+            
+    def mouseReleased(self, mx, my):
+        if self.segmentAdding and self.segmentAddingStage == 1:
+            mx, my = self.snap(mx, my)
+            self.finishSegment(mx, my)
+
+    def mouseMoved(self, mx, my):
+        if self.segmentAdding and self.segmentAddingStage == 1:
+            mx, my = self.snap(mx, my)
+            self.updateSegment(mx, my)            
     
     def doStuff(self):
         pass
@@ -49,25 +178,25 @@ class GraphicsScreen(pygame.Surface):
             pygame.draw.line(self, (0,0,0), (self.cartesianOrigin[0], -10000), (self.cartesianOrigin[0], 10000), 3)
             pygame.draw.line(self, (0,0,0), (-10000, self.cartesianOrigin[1]), (10000, self.cartesianOrigin[1]), 3)
             
-            cur = self.cartesianOrigin[0]
+            cur = self.cartesianOrigin[0] + self.cartesianSpacing
             while cur < self.size[0]:
                 pygame.draw.line(self, (0,0,0), (cur, -10000), (cur, 10000), 1)
-                cur += 20
+                cur += self.cartesianSpacing
                 
-            cur = self.cartesianOrigin[0]
+            cur = self.cartesianOrigin[0] - self.cartesianSpacing
             while cur > 0:
                 pygame.draw.line(self, (0,0,0), (cur, -10000), (cur, 10000), 1)
-                cur -= 20
+                cur -= self.cartesianSpacing
                 
-            cur = self.cartesianOrigin[1]
+            cur = self.cartesianOrigin[1] + self.cartesianSpacing
             while cur < self.size[1]:
                 pygame.draw.line(self, (0,0,0), (-10000, cur), (10000, cur), 1)
-                cur += 20
+                cur += self.cartesianSpacing
                 
-            cur = self.cartesianOrigin[1]
+            cur = self.cartesianOrigin[1] - self.cartesianSpacing
             while cur > 0:
                 pygame.draw.line(self, (0,0,0), (-10000, cur), (10000, cur), 1)
-                cur -= 20
+                cur -= self.cartesianSpacing
             
         elif self.polar:
 #            pygame.draw.line(self, (0,0,0), (self.polarOrigin[0], -10000), (self.polarOrigin[0], 10000), 3)
@@ -93,16 +222,13 @@ class GraphicsScreen(pygame.Surface):
             
             dist = max([dist1, dist2, dist3, dist4])            
             
-            cur = 20
+            cur = self.polarRSpacing
             while cur <= dist:
                 pygame.draw.circle(self, (0,0,0), self.polarOrigin, cur, 1)
-                cur += 20
-            
-            
-#            for i in range(50):
-#                pygame.draw.line(self, (0,0,0), (0, i*10), (100, i*10), 1)
-            
-    
+                cur += self.polarRSpacing
+                
+        for drawable in self.allGeometry:
+            drawable.draw()
     
 class PygameDisplay(wx.Window):
     def __init__(self, parent, ID):
@@ -110,6 +236,8 @@ class PygameDisplay(wx.Window):
         self.parent = parent
         self.hwnd = self.GetHandle()
         os.environ['SDL_WINDOWID'] = str(self.hwnd)
+       
+        self.mouseDown = False       
        
         pygame.display.init()
         pygame.display.set_icon(pygame.image.load('images/icon.png'))
@@ -138,15 +266,18 @@ class PygameDisplay(wx.Window):
         self.snapToGridButton = Buttons.SnapToGridButton()
         self.buttons.append(self.snapToGridButton)
         
+        self.snapToPointButton = Buttons.SnapToPointButton()
+        self.buttons.append(self.snapToPointButton)
+        
+        self.restartButton = Buttons.RestartButton()
+        self.buttons.append(self.restartButton)
+        
         self.runButton = Buttons.RunButton()
         self.buttons.append(self.runButton)
         
         self.pauseButton = Buttons.PauseButton()
         self.buttons.append(self.pauseButton)
-        
-        self.restartButton = Buttons.RestartButton()
-        self.buttons.append(self.restartButton)
-        
+                
         self.pointButton = Buttons.PointButton()
         self.buttons.append(self.pointButton)
         
@@ -155,6 +286,12 @@ class PygameDisplay(wx.Window):
         
         self.undoButton = Buttons.UndoButton()
         self.buttons.append(self.undoButton)
+        
+        self.pinButton = Buttons.PinButton()
+        self.buttons.append(self.pinButton)
+        
+        self.deleteButton = Buttons.DeleteButton()
+        self.buttons.append(self.deleteButton)
         
         numButtons = len(self.buttons)
                 
@@ -168,17 +305,7 @@ class PygameDisplay(wx.Window):
         
         self.setSizes()
         
-        self.mouseDown = False
-        
-        
-    def onMouse(self, event):
-        print "MOUSE SHIT"
-        
     def setSizes(self):
-
-        
-#        print "Size =", self.buttonSize
-                
         self.leftPanel = pygame.Surface((int(self.buttonSize*1.2), self.size[1]))
         self.leftPanelPos = (0,0)
         
@@ -186,23 +313,22 @@ class PygameDisplay(wx.Window):
         self.rightPanelPos = (self.size[0]-self.rightPanel.get_size()[0],0)
         
         self.graphicsPos =  (self.leftPanel.get_size()[0],0)
-        self.graphics.updateSize((self.size[0] - 2*int(self.buttonSize*1.2), self.size[1]))
+        self.graphicsSize = (self.size[0] - 2*int(self.buttonSize*1.2), self.size[1])
+        self.graphics.updateSize(self.graphicsSize)
         
         cur = 0
         for i in range(self.buttonsOnLeft):
             self.buttons[i].setPos(self.leftPanel, self.leftPanelPos[0], self.leftPanelPos[1], 0, cur, self.buttonSize, self.buttonSize)
             cur += self.buttonSize + self.buttonSpacing
-#            print "added on left", cur
         
         cur = 0
         for i in range(self.buttonsOnLeft, len(self.buttons)):
             self.buttons[i].setPos(self.rightPanel, self.rightPanelPos[0], self.rightPanelPos[1], int(self.buttonSize*0.2), cur, self.buttonSize, self.buttonSize)
             cur += self.buttonSize + self.buttonSpacing
-#            print "added on right", cur
  
     def update(self, event):
-#        self.graphics.update()
-
+        self.onMouseMoved()
+        
         if pygame.mouse.get_pressed()[0]:
             if not self.mouseDown:
                 self.mouseDown = True
@@ -216,14 +342,27 @@ class PygameDisplay(wx.Window):
         
     def onMousePressed(self):
         (mx, my) = pygame.mouse.get_pos()
-        for button in self.buttons:
-            buttonID = button.testButton(mx, my)
-            if buttonID != 0:
-                self.graphics.buttonPressed(buttonID)
+        
+        if (mx >= self.graphicsPos[0] and mx <= self.graphicsPos[0]+self.graphicsSize[0]) and (my >= self.graphicsPos[1] and my <= self.graphicsPos[1]+self.graphicsSize[1]):
+            self.graphics.mousePressed(mx-self.graphicsPos[0], my-self.graphicsPos[1])
+        else:
+            for button in self.buttons:
+                buttonID = button.testButton(mx, my)
+                if buttonID != 0:
+                    self.graphics.buttonPressed(buttonID)
         
     def onMouseReleased(self):
-        pass
- 
+        (mx, my) = pygame.mouse.get_pos()
+        
+        if (mx >= self.graphicsPos[0] and mx <= self.graphicsPos[0]+self.graphicsSize[0]) and (my >= self.graphicsPos[1] and my <= self.graphicsPos[1]+self.graphicsSize[1]):
+            self.graphics.mouseReleased(mx-self.graphicsPos[0], my-self.graphicsPos[1])
+        
+    def onMouseMoved(self):
+        (mx, my) = pygame.mouse.get_pos()
+        
+        if (mx >= self.graphicsPos[0] and mx <= self.graphicsPos[0]+self.graphicsSize[0]) and (my >= self.graphicsPos[1] and my <= self.graphicsPos[1]+self.graphicsSize[1]):
+            self.graphics.mouseMoved(mx-self.graphicsPos[0], my-self.graphicsPos[1])
+
     def redraw(self):
         self.screen.fill((255, 255, 255))
         
