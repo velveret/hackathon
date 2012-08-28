@@ -14,11 +14,12 @@ class Drawable(object):
     __metaclass__ = ABCMeta
     x = 0.0
     y = 0.0
-    def __init__(self, newX, newY):
+    def __init__(self, newSurface, newX, newY):
         self.x = newX
         self.y = newY
+        self.surface = newSurface
     @abstractmethod
-    def draw(self, surface):
+    def draw(self):
         pass
     def setX(self, newX):
         self.x = newX
@@ -27,25 +28,25 @@ class Drawable(object):
 
 class Point(Drawable):
     r = 0.0
-    def __init__(self, newX, newY, newR):
-        super(Point, self).__init__(newX, newY)
+    def __init__(self, surface, newX, newY, newR=5):
+        super(Point, self).__init__(surface, newX, newY)
         self.r = newR
-    def draw(self, surface):
-        pg.draw.circle(surface, blackColor, (self.x, self.y), self.r)
+    def draw(self):
+        pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
     def setR(self, newR):
         self.r = newR
 
 class Segment(Drawable):
     x1 = 0.0
     y1 = 0.0
-    def __init__(self, x0, y0, newX1, newY1):
-        super(Segment, self).__init__(x0, y0)
+    def __init__(self, surface, x0, y0, newX1, newY1):
+        super(Segment, self).__init__(surface, x0, y0)
         self.x0 = x0
         self.y0 = y0
         self.x1 = newX1
         self.y1 = newY1
-    def draw(self, surface):
-        pg.draw.line(surface, blueColor, (self.x0, self.y0), (self.x1, self.y1))
+    def draw(self):
+        pg.draw.line(self.surface, blueColor, (self.x0, self.y0), (self.x1, self.y1))
     def getLength(self):
         return np.sqrt((self.x0-self.x1)**2 + (self.y0-self.y1)**2)
     # set switch to True to use (x1,y1) as the reference point to be shifted
@@ -77,7 +78,8 @@ class Segment(Drawable):
         else:
             self.setX1(self.x0 + (self.x1 - self.x0) / ratio)
             self.setY1(self.y0 + (self.y1 - self.y0) / ratio)
-    # set switch to True to use (x1,y1) as the fixed point    
+    # set switch to True to use (x1,y1) as the fixed point 
+    # theta should be in radians
     def rotate(self, theta, switch=False):
         if switch:
             newX = self.x0 - self.x1
@@ -94,4 +96,11 @@ class Segment(Drawable):
 
 Drawable.register(Point)
 Drawable.register(Segment)
-    
+
+# Testing
+#surface = pg.display.set_mode((640, 480))
+#surface.fill(whiteColor)
+#point = Point(surface, 100, 100)
+#point.draw()
+#while True:
+#    pg.display.update()
