@@ -22,20 +22,22 @@ Diagram = {n1:[n2], n2:[n1]}
 head = find_head(Diagram)
 dfs(Diagram, head)
 
-print n1.x
-print n2.x
+print "*****************"
+print n2.y
+print n2.yd
+print "*****************"
 print ""
 
 #Compute the lagrangian
 dgm = [n1, n2]
+print n1.x, "\n", n1.xd
 L = sum([lagrange_01(n) for n in dgm])
 L = sp.simplify(sp.expand(L))
-print L
-print ""
+print "\n\n\nL is \n", L, "\n\n\n"
 
 # Compute and simulate differential equatoins
-tAxis=np.linspace(0,50,10000)
-(x,y,xdot,ydot)=sp.symbols(['th_1','th_2','thd_1','thd_2'])
-EL = calcEL(L, [(x,xdot),(y,ydot)])
-print EL
-out=numTimeEvolve(L,[(x,xdot),(y,ydot),(lam,lamdot)],[(0,0),(3,0)],tAxis)
+#tAxis=np.linspace(0,50,10000)
+#(x,y,xdot,ydot)=sp.symbols(['th_1','th_2','thd_1','thd_2'])
+#EL = calcEL(L, [(x,xdot),(y,ydot)])
+#print EL
+#out=numTimeEvolve(L,[(x,xdot),(y,ydot),(lam,lamdot)],[(0,0),(3,0)],tAxis)
