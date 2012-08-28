@@ -7,8 +7,8 @@ from math import atan2,sin,cos
 from node_02 import Mass
 from sympy import Symbol
 import node_02
+import copy
 
-#pg.init()
 blackColor = pg.Color(0, 0, 0)
 blueColor = pg.Color(0, 0, 255)
 whiteColor = pg.Color(255, 255, 255)
@@ -32,6 +32,23 @@ class Drawable(object):
     @abstractmethod
     def draw(self):
         pass
+    @abstractmethod
+    def get_type(self):
+        pass
+    # assumes points aren't on top of each other/same for segments
+    @staticmethod
+    def intersects(obj1, obj2):
+        if obj1.get_type() == "Point" and obj2.get_type() == "Segment":
+            return Drawable.pointIntersect(obj1.x, obj1.y, obj2.x0, obj2.y0) or\
+                Drawable.pointIntersect(obj1.x, obj1.y, obj2.x1, obj2.y1)
+        elif obj2.get_type() == "Point" and obj1.get_type() == "Segment":
+            return Drawable.pointIntersect(obj2.x, obj2.y, obj1.x0, obj1.y0) or\
+                Drawable.pointIntersect(obj2.x, obj2.y, obj1.x1, obj1.y1)
+        else:
+            return False
+    @staticmethod
+    def pointIntersect(x0, y0, x1, y1):
+        return x0 == x1 and y0 == y1
     def setX(self, newX):
         self.x = newX
     def setY(self, newY):
@@ -45,6 +62,22 @@ class Drawable(object):
         pass
     def makeSym(self,prefix=""):
         return Symbol(prefix + "_" + self.objId)
+    @staticmethod
+    def makeDiagram(drawables):
+        drawingToNode = {}
+        diagram = {}
+        for obj in drawables:
+            node = obj.translate()
+            drawingToNode[obj] = node
+            diagram[node] = set()
+        unvisited = copy.copy(drawables)
+        for obj in drawables:
+            for obj2 in unvisited:
+                if Drawable.intersects(obj, obj2):
+                    diagram[drawingToNode[obj]].add(drawingToNode[obj2])
+                    diagram[drawingToNode[obj2]].add(drawingToNode[obj])
+            unvisited.pop(obj)
+        return diagram
 
 # parameters:
 # surface: to be drawn on
@@ -67,6 +100,8 @@ class Point(Drawable):
             pg.draw.line(self.surface, (255,0,0), (self.x, self.y-self.r), (self.x, self.y+self.r), 3)
         else:
             pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
+    def get_type(self):
+        return "Point"
     def setR(self, newR):
         self.r = newR
     def translate(self):
@@ -98,6 +133,8 @@ class Segment(Drawable):
     def draw(self):
         pg.draw.line(self.surface, blueColor, (self.x0, self.y0), (self.x1,\
             self.y1), 5)
+    def get_type(self):
+        return "Segment"    
     def getLength(self):
         return np.sqrt((self.x0-self.x1)**2 + (self.y0-self.y1)**2)
     # set switch to True to use (x1,y1) as the reference point to be shifted
