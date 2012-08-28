@@ -50,7 +50,9 @@ class Driver:
         usedSymbols=L.atoms(sp.Symbol)
         coords=filter(lambda x: x[0] in usedSymbols or x[0] in usedSymbols, varList)
         print coords
-        numTimeEvolve(L, coords,[1,0,1,0],tAxis)
+        print angleDict
+        initialConditions=[(angleDict[q],0) for (q,qdot) in coords]
+        trajectory=numTimeEvolve(L, coords,initialConditions,np.linspace(0,50,10000))
 #        print "\n\n\nL is \n", L, "\n\n\n"
         
         # Compute and simulate differential equatoins
