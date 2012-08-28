@@ -25,12 +25,13 @@ def calcEL(L, coordinates):
     fromTimeDependent={}
     for (i,(q,qdot)) in enumerate(coordinates):
         q_t=sp.Function('q_%i'%i)
-        fromTimeDependent[sp.symbols(str(qdot)+"dot")]=sp.diff(q_t(t),t,t)
+        toTimeDependent[sp.symbols(str(qdot)+"dot")]=sp.diff(q_t(t),t,t)
         toTimeDependent[qdot]=sp.diff(q_t(t),t)
         toTimeDependent[q]=q_t(t)
         fromTimeDependent[sp.diff(q_t(t),t,t)]=sp.symbols(str(qdot)+"dot")
         fromTimeDependent[sp.diff(q_t(t),t)]=qdot
         fromTimeDependent[q_t(t)]=q
+    #print fromTimeDependent
     for (i,(q,qdot)) in enumerate(coordinates):
         dL_dq=sp.diff(L,q)
         dL_dqdot=sp.diff(L,qdot).subs(toTimeDependent)
@@ -41,7 +42,7 @@ def calcEL(L, coordinates):
         while not any([qdotdot_i in EL[i].atoms() for qdotdot_i in qdotdot]):
             ELNew=EL[i].subs(toTimeDependent)
             ELNew=sp.diff(ELNew,t).subs(fromTimeDependent)
-            print ELNew
+            #print ELNew
             EL[i]=ELNew
     return EL
 def makeOdeFunc(EL,coords):

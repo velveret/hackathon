@@ -434,11 +434,11 @@ class PygameDisplay(wx.Window):
         self.screen.fill((255, 255, 255))
         
 #        self.graphics.fill((255,255,255))
-        self.graphics.fill((0,255,0))
+        self.graphics.fill((220,220,220))
         self.graphics.draw()
         
-        self.leftPanel.fill((200,200,200))
-        self.rightPanel.fill((200,200,200))
+        self.leftPanel.fill((100,100,100))
+        self.rightPanel.fill((100,100,100))
         
                 
         for buttonKey in self.buttons.keys():

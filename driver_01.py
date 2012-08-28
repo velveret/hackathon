@@ -49,8 +49,9 @@ class Driver:
         L = sp.simplify(sp.expand(L))
         usedSymbols=L.atoms(sp.Symbol)
         coords=filter(lambda x: x[0] in usedSymbols or x[0] in usedSymbols, varList)
-        print coords
-        print angleDict
+        #print coords
+        #print angleDict
+        print calcEL(L, coords)
         initialConditions=[(angleDict[q],0) for (q,qdot) in coords]
         trajectory=numTimeEvolve(L, coords,initialConditions,np.linspace(0,50,10000))
 #        print "\n\n\nL is \n", L, "\n\n\n"
