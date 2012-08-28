@@ -3,11 +3,13 @@ import numpy  as np
 import sympy  as sp
 import pygame as pg
 from scipy import integrate
+t=sp.Symbol('t')
 def calcEL(L, coordinates):
     """
     L is a sympy expression for the Lagrangian.
     coordinates is a list of tuples, like so:
     [(x,xdot),(y,ydot)]
+    constraints are expressions that must be 0.
     Output:
     a tuple containing:
         eulerLagrange: the expression the euler lagrange equation yields
@@ -18,7 +20,6 @@ def calcEL(L, coordinates):
     """
     #First, we need functions of time that correspond to each position
     #    variable. This is clunky, but should work...
-    t=sp.Symbol('t')
     EL=[]
     toTimeDependent={}
     fromTimeDependent={}
@@ -35,12 +36,31 @@ def calcEL(L, coordinates):
         dL_dqdot=sp.diff(L,qdot).subs(toTimeDependent)
         ddL_dqdot_dt=sp.diff(dL_dqdot,t).subs(fromTimeDependent)
         EL.append(ddL_dqdot_dt-dL_dq)
+    qdotdot=[sp.symbols(str(qdot)+"dot") for (q,qdot) in coordinates]
+    for EL_i in EL:
+        if not any([qdotdot_i in EL_i.atoms() for qdotdot_i in qdotdot]):
+            ELNew=EL_i.subs(toTimeDependent)
+            ELNew=sp.diff(ELNew,t).subs(fromTimeDependent)
+            print ELNew
+            EL.append(ELNew)
     return EL
 def makeOdeFunc(EL,coords):
     """
     coords should be of the same form as input to calcEL
     """
     qdotdot=[sp.symbols(str(qdot)+"dot") for (q,qdot) in coords]
+    """
+    hasSecondDeriv=[any((qdotdot_i in EL_i for EL_i in EL))
+            for qdotdot_i in qdotdot]
+    print hasSecondDeriv
+    hasFirstDeriv=[any((qdot in EL_i for EL_i in EL))
+            for (q,qdot) in coords]
+    print hasFirstDeriv
+    filter=[None]*2*len(coords)
+    filter[::2]=[d1 or d2 for (d1,d2) in zip(hasFirstDeriv,hasSecondDeriv)]
+    filter[1::2]=hasSecondDeriv
+    print filter
+    """
     secondDerivs=sp.solve(EL,qdotdot)
     print secondDerivs
     if not secondDerivs:
