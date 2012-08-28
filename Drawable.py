@@ -4,20 +4,31 @@ from abc import ABCMeta
 import pygame as pg
 import numpy as np
 from math import atan2,sin,cos
+from node_02 import Mass
+from sympy import Symbol
+import node_02
 
 pg.init()
 blackColor = pg.Color(0, 0, 0)
 blueColor = pg.Color(0, 0, 255)
 whiteColor = pg.Color(255, 255, 255)
+currentId = 0
 
 class Drawable(object):
     __metaclass__ = ABCMeta
     x = 0.0
     y = 0.0
-    def __init__(self, newSurface, newX, newY):
+    m = 0.0
+    fixed = False
+    def __init__(self, newSurface, newX, newY, newM, isFixed):
         self.x = newX
         self.y = newY
         self.surface = newSurface
+        self.m = newM
+        self.fixed = isFixed
+        global currentId
+        self.objId = str(currentId)
+        currentId = currentId + 1
     @abstractmethod
     def draw(self):
         pass
@@ -25,28 +36,62 @@ class Drawable(object):
         self.x = newX
     def setY(self, newY):
         self.y = newY
+    def setMass(self, newM):
+        self.m = newM
+    def setFixed(self, isFixed):
+        self.fixed = isFixed
+    @abstractmethod
+    def translate(self):
+        pass
+    def makeSym(self,prefix=""):
+        return Symbol(prefix + "_" + self.objId)
 
+# parameters:
+# surface: to be drawn on
+# x: x-coordinate of center relative to surface
+# y: y-coordinate center relative to surface
+# optional params:
+# m: mass (default is 1.0)
+# fixed: whether it is fixed (default is False)
+# r: radius of point to the drawn (default is 5)
 class Point(Drawable):
     r = 0.0
-    def __init__(self, surface, newX, newY, newR=5):
-        super(Point, self).__init__(surface, newX, newY)
+    def __init__(self, surface, newX, newY, newM=1.0, isFixed=False, newR=5):
+        super(Point, self).__init__(surface, newX, newY, newM, isFixed)
         self.r = newR
     def draw(self):
         pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
     def setR(self, newR):
         self.r = newR
+    def translate(self):
+        return Mass(self.makeSym("x"), self.makeSym("y"), self.makeSym("xd"),\
+            self.makeSym("yd"),self.objId, self.m, self.fixed)
 
+# parameters:
+# surface: to be drawn on
+# x0,y0: coordinate of first endpoint
+# x1,y1: coordinate of second endpoint
+# optional params:
+# I: moment of inertia (default is 1.0)
+# r: ratio representing distance from centroid, ranges from 0.0 to 1.0
+#    (default is 0.5)
+# m: mass (default is 1.0)
+# fixed: whether it is fixed (default is False)
 class Segment(Drawable):
     x1 = 0.0
     y1 = 0.0
-    def __init__(self, surface, x0, y0, newX1, newY1):
-        super(Segment, self).__init__(surface, x0, y0)
+    def __init__(self, surface, x0, y0, newX1, newY1, newI=1.0, newR=0.5,\
+            newM=1.0, isFixed=False):
+        super(Segment, self).__init__(surface, x0, y0, newM, isFixed)
         self.x0 = x0
         self.y0 = y0
         self.x1 = newX1
         self.y1 = newY1
+        self.I = newI
+        self.r = Segment.maybeValidRatio(newR)
     def draw(self):
-        pg.draw.line(self.surface, blueColor, (self.x0, self.y0), (self.x1, self.y1))
+        pg.draw.line(self.surface, blueColor, (self.x0, self.y0), (self.x1,\
+            self.y1))
     def getLength(self):
         return np.sqrt((self.x0-self.x1)**2 + (self.y0-self.y1)**2)
     # set switch to True to use (x1,y1) as the reference point to be shifted
@@ -69,6 +114,13 @@ class Segment(Drawable):
         self.y0 = newY
     def setY1(self, newY):
         self.y1 = newY
+    def setMomentOfInertia(self, newI):
+        self.I = newI
+    def setRatioDistanceToCentroid(self, newR):
+        try:        
+            self.r = Segment.maybeValidRatio(newR)
+        except AttributeError:
+            pass
     # set switch to True to use (x1,y1) as the fixed point
     def setLength(self, length, switch=False):
         ratio = self.getLength() / float(length)
@@ -84,15 +136,29 @@ class Segment(Drawable):
         if switch:
             newX = self.x0 - self.x1
             newY = self.y0 - self.y1  
-            newX, newY = newX * cos(theta) - newY * sin(theta) + self.x1, newX * sin(theta) + newY * cos(theta) + self.y1
+            newX, newY = newX * cos(theta) - newY * sin(theta) + self.x1,\
+                newX * sin(theta) + newY * cos(theta) + self.y1
             self.setX0(newX)
             self.setY0(newY)
         else:
             newX = self.x1 - self.x0
             newY = self.y1 - self.y0  
-            newX, newY = newX * cos(theta) - newY * sin(theta) + self.x0, newX * sin(theta) + newY * cos(theta) + self.y0
+            newX, newY = newX * cos(theta) - newY * sin(theta) + self.x0,\
+                newX * sin(theta) + newY * cos(theta) + self.y0
             self.setX1(newX)
             self.setY1(newY)
+    def translate(self):
+        return node_02.Segment(self.makeSym("x"), self.makeSym("y"),\
+            self.makeSym("xd"),self.makeSym("yd"),self.makeSym("th"),\
+            self.makeSym("thd"), self.objId, self.m, self.I, self.r,\
+            self.getLength(), self.fixed)
+    @staticmethod
+    def maybeValidRatio(num):
+        if num >= 0.0 and num <= 1.0:
+            return num
+        else:
+            raise AttributeError("%f out of bounds, should be between 0 and 1"\
+                % num)
 
 Drawable.register(Point)
 Drawable.register(Segment)
@@ -100,7 +166,13 @@ Drawable.register(Segment)
 # Testing
 #surface = pg.display.set_mode((640, 480))
 #surface.fill(whiteColor)
-#point = Point(surface, 100, 100)
+#point = Point(surface, 100, 100, 2.4, True, 10)
+#segment = Segment(surface, 100, 100, 200, 200, 3.2, 0.75, 5.2, True)
+#segment.setRatioDistanceToCentroid(1.5)
+#collection = [point, segment]
+#translation = [obj.translate() for obj in collection]
+#print translation[0].__dict__
+#print translation[1].__dict__
 #point.draw()
 #while True:
 #    pg.display.update()
