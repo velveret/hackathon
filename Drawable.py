@@ -34,9 +34,12 @@ class StaticDrawing():
         drawingToNode = {}
         diagram = {}
         varList = []
+        angleDict = {}
         for obj in drawables:
             node, newVars = obj.translate(origin)
             varList.extend(newVars)
+            if obj.get_type() == "Segment":
+                angleDict[node.th] = obj.getTheta()
             drawingToNode[obj] = node
             diagram[node] = set()
         unvisited = copy.copy(drawables)
@@ -46,7 +49,7 @@ class StaticDrawing():
                     diagram[drawingToNode[obj]].add(drawingToNode[obj2])
                     diagram[drawingToNode[obj2]].add(drawingToNode[obj])
             unvisited.remove(obj)
-        return diagram, varList
+        return diagram, varList, angleDict
 
 class Drawable(object):
     __metaclass__ = ABCMeta
