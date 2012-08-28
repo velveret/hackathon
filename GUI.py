@@ -286,7 +286,18 @@ class GraphicsScreen(pygame.Surface):
                 pygame.draw.circle(self, (0,0,0), self.polarOrigin, cur, 1)
                 cur += self.polarRSpacing
                 
+        segments = []
+        points = []
         for drawable in self.allGeometry:
+            if isinstance(drawable, Segment):
+                segments.append(drawable)
+            else:
+                points.append(drawable)
+        
+        for drawable in segments:
+            drawable.draw()
+            
+        for drawable in points:
             drawable.draw()
     
 class PygameDisplay(wx.Window):
