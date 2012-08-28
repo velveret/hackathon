@@ -76,14 +76,21 @@ def makeOdeFunc(EL,coords):
         elif qdot_i in solveForVars:
             inputs.append(q_i)
     print inputs
+    #Dfun=[]
     for (i,((q_i,qdot_i),qdotdot_i)) in enumerate(zip(coords,qdotdot)):
         if qdotdot_i in solveForVars:
-            funcList.append((lambda i: lambda x:x[i])(i))
+            funcList.append((lambda qdot_i: lambda x:x[inputs.index(qdot_i)])(qdot_i))
+            #Dfun.append([lambda x:0]*len(inputs))
+            #Dfun[-1][inputs.index(qdot_i)]=lambda x:1
             funcList.append((lambda f: lambda x: f(*x))(sp.lambdify(inputs,
                     solvedVars[i])))
+            #Dfun.append([(lambda f: lambda x: f(*x))(sp.lambdify(inputs,
+            #        sp.diff(solvedVars[i],inp))) for inp in inputs])
         elif qdot_i in solveForVars:
-            funcList.append(sp.lambdify(inputs,
-                    solvedVars[i]))
+            funcList.append((lambda f: lambda x: f(*x))(sp.lambdify(inputs,
+                    solvedVars[i])))
+            #Dfun.append([(lambda f: lambda x: f(*x))(sp.lambdify(inputs,
+            #        sp.diff(solvedVars[i],inp))) for inp in inputs])
     def odeFunc(coords,t=None):
          """
          Takes a list of coordinates of the form [x,xdot,y,ydot]
