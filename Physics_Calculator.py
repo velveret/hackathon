@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy  as np
 import sympy  as sp
-import pygame as pg
+#import pygame as pg
 from scipy import integrate
 t=sp.Symbol('t')
 def calcEL(L, coordinates):
