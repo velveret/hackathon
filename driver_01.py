@@ -51,10 +51,11 @@ class Driver:
         coords=filter(lambda x: x[0] in usedSymbols or x[0] in usedSymbols, varList)
         #print coords
         #print angleDict
-        print calcEL(L, coords)
+#        print calcEL(L, coords)
+        lagrange = calcEL(L, coords)
         initialConditions=[(angleDict[q],0) for (q,qdot) in coords]
-        trajectory=numTimeEvolve(L, coords,initialConditions,np.linspace(0,1000,10000))
-        return trajectory
+        trajectory=numTimeEvolve(L, coords,initialConditions,np.linspace(0,1000,4000))
+        return trajectory, lagrange
 #        print "\n\n\nL is \n", L, "\n\n\n"
         
         # Compute and simulate differential equatoins

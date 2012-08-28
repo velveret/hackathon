@@ -8,6 +8,15 @@ from driver_01 import Driver
 from copy import copy
 from AnimationPositionFinder import AnimationPositions
 
+
+class DisplayLagrangeWindow(wx.Frame):
+    def __init__(self, parent, title, lagrange):
+        wx.Frame.__init__(self, parent, title=title, size=(500,500))
+        self.control = wx.TextCtrl(self, style=wx.TE_READONLY+wx.TE_MULTILINE)
+        for part in lagrange:
+            self.control.AppendText(str(part)+" = 0\n\n")
+        self.Show(True)
+
 class GraphicsScreen(pygame.Surface):
     def __init__(self, size, buttons):
         pygame.Surface.__init__(self, size)
@@ -45,6 +54,7 @@ class GraphicsScreen(pygame.Surface):
         self.runningGeometry = []
         
         self.runningSimulation = False
+        self.simulationPaused = False
         
         
     def runSimulationStart(self):
@@ -63,14 +73,16 @@ class GraphicsScreen(pygame.Surface):
 #            self.draw(geom)
 
     def simulationFrame(self):
-        try:
-            self.runningGeometry = self.geom.next()
-        except:
-            self.runningSimulation = False
-            return
-        print self.runningGeometry
-        for node in self.runningGeometry:
-            print node.__dict__
+        if not self.simulationPaused:
+            try:
+                self.runningGeometry = self.geom.next()
+            except:
+                self.buttons["run"].setState(False)
+                self.runningSimulation = False
+                return
+#        print self.runningGeometry
+#        for node in self.runningGeometry:
+#            print node.__dict__
 #        self.draw(geom)            
     
     def buttonPressed(self, buttonID):
@@ -145,11 +157,29 @@ class GraphicsScreen(pygame.Surface):
             self.buttons["delete"].setState(True)
             
         elif buttonID == "run":
-            if len(self.allGeometry) > 0:
-                self.diagram, self.varList, self.angleDict = StaticDrawing.makeDiagram(self.allGeometry, self.origin)
-                self.traj = Driver.drive(self.diagram, self.varList, self.angleDict)
-                self.runSimulationStart()
-            self.buttons["run"].setState(True)
+            if not self.runningSimulation:
+                if len(self.allGeometry) > 0:
+                    self.diagram, self.varList, self.angleDict = StaticDrawing.makeDiagram(self.allGeometry, self.origin)
+                    self.traj, tempLag = Driver.drive(self.diagram, self.varList, self.angleDict)
+                    frame = DisplayLagrangeWindow(None, "Euler-Lagrange Equations", tempLag)
+#                    app.MainLoop()
+                    self.runSimulationStart()
+                self.buttons["run"].setState(True)
+            else:
+                if self.simulationPaused:
+                    self.simulationPaused = False
+                    self.buttons["pause"].setState(False)
+            
+        elif buttonID == "pause":
+            if self.runningSimulation:
+                self.simulationPaused = not self.simulationPaused
+            self.buttons["pause"].setState(self.simulationPaused)
+            
+        elif buttonID == "restart":
+            if self.runningSimulation:
+                self.runningSimulation = False
+                self.buttons["run"].setState(False)
+                self.buttons["pause"].setState(False)
             
     def snap(self, x, y, objToSnapTo):
         snapped = False
@@ -318,7 +348,7 @@ class GraphicsScreen(pygame.Surface):
             for drawable in points:
                 drawable.draw()
         else:
-            print "drawing new geom"
+#            print "drawing new geom"
             for drawable in self.runningGeometry:
                 drawable.draw()
     
@@ -526,9 +556,9 @@ class MainWindow(wx.Frame):
 
         filemenu= wx.Menu()
 
-        menuAbout = filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
-        self.Bind(wx.EVT_MENU, self.onAbout, menuAbout)
-        filemenu.AppendSeparator()
+#        menuAbout = filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
+#        self.Bind(wx.EVT_MENU, self.onAbout, menuAbout)
+#        filemenu.AppendSeparator()
         menuExit = filemenu.Append(wx.ID_EXIT,"E&xit"," Terminate the program")
         self.Bind(wx.EVT_MENU, self.onExit, menuExit)
         

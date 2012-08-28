@@ -39,7 +39,7 @@ class StaticDrawing():
             node, newVars = obj.translate(origin)
             varList.extend(newVars)
             if obj.get_type() == "Segment":
-                angleDict[node.th] = obj.getTheta()
+                angleDict[node.th] = -obj.getTheta()
             drawingToNode[obj] = node
             diagram[node] = set()
         unvisited = copy.copy(drawables)

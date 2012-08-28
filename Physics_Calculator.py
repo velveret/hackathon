@@ -68,7 +68,7 @@ def makeOdeFunc(EL,coords):
     leadingCoeffs=ELMatrix.jacobian(solveForVars)
     nonLeadingTerms=leadingCoeffs*sp.Matrix(solveForVars)-ELMatrix
     nonLeadingTerms=sp.Matrix([sp.simplify(term) for term in nonLeadingTerms])
-    solvedVars=leadingCoeffs.inv()*nonLeadingTerms
+    solvedVars=leadingCoeffs.inverse_ADJ()*nonLeadingTerms
     funcList=[]
     inputs=[]
     for (i,((q_i,qdot_i),qdotdot_i)) in enumerate(zip(coords,qdotdot)):

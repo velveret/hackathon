@@ -29,7 +29,7 @@ class AnimationPositions:
             for node in diagram.keys():
                 if node.get_type() == "Segment":
                     self.nodeSymbols[node.objId] = node.th
-        for step in traj[::4]:
+        for step in traj:
             angles = step[::2]
             angSymToVal = {}
             current = 0;
