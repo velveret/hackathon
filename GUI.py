@@ -2,22 +2,105 @@ import pygame
 import wx
 import os
 import Buttons
-from math import ceil
+from math import ceil, pi, sin, cos, sqrt
 
 class GraphicsScreen(pygame.Surface):
-    def __init__(self, size):
+    def __init__(self, size, buttons):
         pygame.Surface.__init__(self, size)
+        self.size = size
+        self.buttons = buttons
+        
+        self.snap = True
+        
+        self.cartesian = True
+        self.cartesianOrigin = (100,100)
+        
+        self.polar = False
+        self.polarOrigin = (300,300)
+        
+    def buttonPressed(self, buttonID):
+        if buttonID == 1:
+            self.cartesian = True
+            self.polar = False
+            self.buttons[0].setState(True)
+            self.buttons[1].setState(False)
+            
+        elif buttonID == 2:
+            self.cartesian = False
+            self.polar = True
+            self.buttons[0].setState(False)
+            self.buttons[1].setState(True)
     
     def doStuff(self):
         pass
     
-    def updateSize(self):
-        self.size = 0
+    def updateSize(self, size):
+        pygame.Surface.__init__(self, size)
+        self.size = size
+        
+    def dist(self, p1, p2):
+        (x1, y1) = p1
+        (x2, y2) = p2
+        return sqrt((x1-x2)**2 + (y1-y2)**2)
     
     def draw(self):
         
-        for i in range(50):
-            pygame.draw.line(self, (0,0,0), (0, i*10), (100, i*10), 1)
+        if self.cartesian:
+            pygame.draw.line(self, (0,0,0), (self.cartesianOrigin[0], -10000), (self.cartesianOrigin[0], 10000), 3)
+            pygame.draw.line(self, (0,0,0), (-10000, self.cartesianOrigin[1]), (10000, self.cartesianOrigin[1]), 3)
+            
+            cur = self.cartesianOrigin[0]
+            while cur < self.size[0]:
+                pygame.draw.line(self, (0,0,0), (cur, -10000), (cur, 10000), 1)
+                cur += 20
+                
+            cur = self.cartesianOrigin[0]
+            while cur > 0:
+                pygame.draw.line(self, (0,0,0), (cur, -10000), (cur, 10000), 1)
+                cur -= 20
+                
+            cur = self.cartesianOrigin[1]
+            while cur < self.size[1]:
+                pygame.draw.line(self, (0,0,0), (-10000, cur), (10000, cur), 1)
+                cur += 20
+                
+            cur = self.cartesianOrigin[1]
+            while cur > 0:
+                pygame.draw.line(self, (0,0,0), (-10000, cur), (10000, cur), 1)
+                cur -= 20
+            
+        elif self.polar:
+#            pygame.draw.line(self, (0,0,0), (self.polarOrigin[0], -10000), (self.polarOrigin[0], 10000), 3)
+#            pygame.draw.line(self, (0,0,0), (-10000, self.polarOrigin[1]), (10000, self.polarOrigin[1]), 3)
+            
+            for i in range(12):
+                angle = pi*i/12.0
+                x1 = cos(angle)*-10000 + self.polarOrigin[0]
+                y1 = sin(angle)*-10000 + self.polarOrigin[1]
+                
+                x2 = cos(angle)*10000 + self.polarOrigin[0]
+                y2 = sin(angle)*10000 + self.polarOrigin[1]
+                
+                if i==0 or i==6:
+                    pygame.draw.line(self, (0,0,0), (x1, y1), (x2, y2), 3)
+                else:
+                    pygame.draw.line(self, (0,0,0), (x1, y1), (x2, y2), 1)
+            
+            dist1 = self.dist(self.polarOrigin, (0,0))
+            dist2 = self.dist(self.polarOrigin, (self.size[0], 0))
+            dist3 = self.dist(self.polarOrigin, (0, self.size[1]))
+            dist4 = self.dist(self.polarOrigin, (self.size[0], self.size[1]))
+            
+            dist = max([dist1, dist2, dist3, dist4])            
+            
+            cur = 20
+            while cur <= dist:
+                pygame.draw.circle(self, (0,0,0), self.polarOrigin, cur, 1)
+                cur += 20
+            
+            
+#            for i in range(50):
+#                pygame.draw.line(self, (0,0,0), (0, i*10), (100, i*10), 1)
             
     
     
@@ -58,34 +141,41 @@ class PygameDisplay(wx.Window):
         self.runButton = Buttons.RunButton()
         self.buttons.append(self.runButton)
         
-        self.runButton = Buttons.RunButton()
-        self.buttons.append(self.runButton)
-        self.runButton = Buttons.RunButton()
-        self.buttons.append(self.runButton)
-        self.runButton = Buttons.RunButton()
-        self.buttons.append(self.runButton)
-        self.runButton = Buttons.RunButton()
-        self.buttons.append(self.runButton)
-        self.runButton = Buttons.RunButton()
-        self.buttons.append(self.runButton)
+        self.pauseButton = Buttons.PauseButton()
+        self.buttons.append(self.pauseButton)
+        
+        self.restartButton = Buttons.RestartButton()
+        self.buttons.append(self.restartButton)
+        
+        self.pointButton = Buttons.PointButton()
+        self.buttons.append(self.pointButton)
+        
+        self.segmentButton = Buttons.SegmentButton()
+        self.buttons.append(self.segmentButton)
+        
+        self.undoButton = Buttons.UndoButton()
+        self.buttons.append(self.undoButton)
+        
+        numButtons = len(self.buttons)
+                
+        self.buttonsOnLeft = int(ceil(numButtons/2.0))
+        
+        self.buttonSize = (self.size[1]-20) / self.buttonsOnLeft
+        
+        self.buttonSize -= self.buttonSpacing        
+        
+        self.graphics = GraphicsScreen((self.size[0] - 2*int(self.buttonSize*1.2), self.size[1]), self.buttons)
         
         self.setSizes()
         
         self.mouseDown = False
         
-        self.graphics = GraphicsScreen((self.size[0] - 2*int(self.buttonSize*1.2), self.size[1]))
         
     def onMouse(self, event):
         print "MOUSE SHIT"
         
     def setSizes(self):
-        numButtons = len(self.buttons)
-                
-        buttonsOnLeft = int(ceil(numButtons/2.0))
-        
-        self.buttonSize = (self.size[1]-20) / buttonsOnLeft
-        
-        self.buttonSize -= self.buttonSpacing
+
         
 #        print "Size =", self.buttonSize
                 
@@ -96,15 +186,16 @@ class PygameDisplay(wx.Window):
         self.rightPanelPos = (self.size[0]-self.rightPanel.get_size()[0],0)
         
         self.graphicsPos =  (self.leftPanel.get_size()[0],0)
+        self.graphics.updateSize((self.size[0] - 2*int(self.buttonSize*1.2), self.size[1]))
         
         cur = 0
-        for i in range(buttonsOnLeft):
+        for i in range(self.buttonsOnLeft):
             self.buttons[i].setPos(self.leftPanel, self.leftPanelPos[0], self.leftPanelPos[1], 0, cur, self.buttonSize, self.buttonSize)
             cur += self.buttonSize + self.buttonSpacing
 #            print "added on left", cur
         
         cur = 0
-        for i in range(buttonsOnLeft, len(self.buttons)):
+        for i in range(self.buttonsOnLeft, len(self.buttons)):
             self.buttons[i].setPos(self.rightPanel, self.rightPanelPos[0], self.rightPanelPos[1], int(self.buttonSize*0.2), cur, self.buttonSize, self.buttonSize)
             cur += self.buttonSize + self.buttonSpacing
 #            print "added on right", cur
@@ -124,11 +215,11 @@ class PygameDisplay(wx.Window):
         self.redraw()
         
     def onMousePressed(self):
-        print "Testing"
         (mx, my) = pygame.mouse.get_pos()
         for button in self.buttons:
-            if button.testButton(mx, my):
-                print "Got one"
+            buttonID = button.testButton(mx, my)
+            if buttonID != 0:
+                self.graphics.buttonPressed(buttonID)
         
     def onMouseReleased(self):
         pass
@@ -136,7 +227,8 @@ class PygameDisplay(wx.Window):
     def redraw(self):
         self.screen.fill((255, 255, 255))
         
-        self.graphics.fill((255,255,255))
+#        self.graphics.fill((255,255,255))
+        self.graphics.fill((0,255,0))
         self.graphics.draw()
         
         self.leftPanel.fill((200,200,200))
