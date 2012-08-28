@@ -35,7 +35,7 @@ print ""
 
 # Compute and simulate differential equatoins
 tAxis=np.linspace(0,50,10000)
-(x,y,lam,xdot,ydot,lamdot)=sp.symbols(['th_1','th_2','lam','thd_1','thd_2','lamd'])
-#EL = calcEL(L, [(x,xdot),(y,ydot),(lam,lamdot)])
-#print EL
-numTimeEvolve(L,[(x,xdot),(y,ydot),(lam,lamdot)],[(0,0),(3,0)],tAxis)
+(x,y,xdot,ydot)=sp.symbols(['th_1','th_2','thd_1','thd_2'])
+EL = calcEL(L, [(x,xdot),(y,ydot)])
+print EL
+out=numTimeEvolve(L,[(x,xdot),(y,ydot),(lam,lamdot)],[(0,0),(3,0)],tAxis)

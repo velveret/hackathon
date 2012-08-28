@@ -1,0 +1,21 @@
+0.5*cos(th_1) 
+0.5*sin(th_1)
+-0.5*thd_1*sin(th_1) 
+0.5*thd_1*cos(th_1)
+1.0*cos(th_1) + 0.5*cos(th_2) 
+1.0*sin(th_1) + 0.5*sin(th_2)
+-1.0*thd_1*sin(th_1) - 0.5*thd_2*sin(th_2) 
+1.0*thd_1*cos(th_1) + 0.5*thd_2*cos(th_2)
+
+0.125*thd_1**2*sin(th_1)**2 + 0.125*thd_1**2*cos(th_1)**2 + 0.5*thd_1**2 - 0.5*sin(th_1)
+0.5*thd_2**2 + 0.5*(-1.0*thd_1*sin(th_1) - 0.5*thd_2*sin(th_2))**2 + 0.5*(1.0*thd_1*cos(th_1) + 0.5*thd_2*cos(th_2))**2 - 1.0*sin(th_1) - 0.5*sin(th_2)
+
+
+
+L is 
+1.125*thd_1**2 + 0.5*thd_1*thd_2*sin(th_1)*sin(th_2) + 0.5*thd_1*thd_2*cos(th_1)*cos(th_2) + 0.625*thd_2**2 - 1.5*sin(th_1) - 0.5*sin(th_2) 
+
+
+
+EL:  [2.25*thd_1dot + 0.5*thd_2**2*sin(th_1)*cos(th_2) - 0.5*thd_2**2*sin(th_2)*cos(th_1) + 0.5*thd_2dot*sin(th_1)*sin(th_2) + 0.5*thd_2dot*cos(th_1)*cos(th_2) + 1.5*cos(th_1), -0.5*thd_1**2*sin(th_1)*cos(th_2) + 0.5*thd_1**2*sin(th_2)*cos(th_1) + 0.5*thd_1dot*sin(th_1)*sin(th_2) + 0.5*thd_1dot*cos(th_1)*cos(th_2) + 1.25*thd_2dot + 0.5*cos(th_2)]
+
