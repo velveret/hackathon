@@ -8,7 +8,7 @@ from node_02 import Mass
 from sympy import Symbol
 import node_02
 
-pg.init()
+#pg.init()
 blackColor = pg.Color(0, 0, 0)
 blueColor = pg.Color(0, 0, 255)
 whiteColor = pg.Color(255, 255, 255)
@@ -56,7 +56,7 @@ class Drawable(object):
 # r: radius of point to the drawn (default is 5)
 class Point(Drawable):
     r = 0.0
-    def __init__(self, surface, newX, newY, newM=1.0, isFixed=False, newR=5):
+    def __init__(self, surface, newX, newY, newM=1.0, isFixed=False, newR=10):
         super(Point, self).__init__(surface, newX, newY, newM, isFixed)
         self.r = newR
     def draw(self):
@@ -91,7 +91,7 @@ class Segment(Drawable):
         self.r = Segment.maybeValidRatio(newR)
     def draw(self):
         pg.draw.line(self.surface, blueColor, (self.x0, self.y0), (self.x1,\
-            self.y1))
+            self.y1), 5)
     def getLength(self):
         return np.sqrt((self.x0-self.x1)**2 + (self.y0-self.y1)**2)
     # set switch to True to use (x1,y1) as the reference point to be shifted
