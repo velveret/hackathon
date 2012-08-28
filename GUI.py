@@ -3,35 +3,8 @@ import wx
 import os
 import Buttons
 from math import pi, sin, cos, sqrt, atan2
-from Drawable import Point, Segment
-from copy import deepcopy
-
-#Buttons
-""" 
-(IDs)
-1  ==> Cartesian
-2  ==> Polar
-3  ==> Snap To Grid
-4  ==> Snap To Point
-5  ==> Run
-6  ==> Pause
-7  ==> Restart
-8  ==> Point
-9  ==> Segment
-10 ==> Undo
-
-(List)
-0  ==> Cartesian
-1  ==> Polar
-2  ==> Snap To Grid
-3  ==> Snap To Point
-4  ==> Restart
-5  ==> Run
-6  ==> Pause
-7  ==> Point
-8  ==> Segment
-9  ==> Undo
-"""
+from Drawable import Point, Segment, StaticDrawing
+from driver_01 import Driver
 
 class GraphicsScreen(pygame.Surface):
     def __init__(self, size, buttons):
@@ -136,6 +109,12 @@ class GraphicsScreen(pygame.Surface):
                     self.prevGeometry.append(geom)
                 self.allGeometry = []
             self.buttons["delete"].setState(True)
+            
+        elif buttonID == "run":
+            if len(self.allGeometry) > 0:
+                diagram = StaticDrawing.makeDiagram(self.allGeometry)
+                Driver.drive(diagram)
+            self.buttons["run"].setState(True)
             
     def snap(self, x, y, objToSnapTo):
         snapped = False

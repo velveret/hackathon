@@ -14,6 +14,38 @@ blueColor = pg.Color(0, 0, 255)
 whiteColor = pg.Color(255, 255, 255)
 currentId = 0
 
+class StaticDrawing():
+    @staticmethod
+    def pointIntersect(x0, y0, x1, y1):
+        return x0 == x1 and y0 == y1
+    # assumes points aren't on top of each other/same for segments
+    @staticmethod
+    def intersects(obj1, obj2):
+        if obj1.get_type() == "Point" and obj2.get_type() == "Segment":
+            return StaticDrawing.pointIntersect(obj1.x, obj1.y, obj2.x0, obj2.y0) or\
+                StaticDrawing.pointIntersect(obj1.x, obj1.y, obj2.x1, obj2.y1)
+        elif obj2.get_type() == "Point" and obj1.get_type() == "Segment":
+            return StaticDrawing.pointIntersect(obj2.x, obj2.y, obj1.x0, obj1.y0) or\
+                StaticDrawing.pointIntersect(obj2.x, obj2.y, obj1.x1, obj1.y1)
+        else:
+            return False
+    @staticmethod
+    def makeDiagram(drawables):
+        drawingToNode = {}
+        diagram = {}
+        for obj in drawables:
+            node = obj.translate()
+            drawingToNode[obj] = node
+            diagram[node] = set()
+        unvisited = copy.copy(drawables)
+        for obj in drawables:
+            for obj2 in unvisited:
+                if StaticDrawing.intersects(obj, obj2):
+                    diagram[drawingToNode[obj]].add(drawingToNode[obj2])
+                    diagram[drawingToNode[obj2]].add(drawingToNode[obj])
+            unvisited.remove(obj)
+        return diagram
+
 class Drawable(object):
     __metaclass__ = ABCMeta
     x = 0.0
@@ -35,20 +67,6 @@ class Drawable(object):
     @abstractmethod
     def get_type(self):
         pass
-    # assumes points aren't on top of each other/same for segments
-    @staticmethod
-    def intersects(obj1, obj2):
-        if obj1.get_type() == "Point" and obj2.get_type() == "Segment":
-            return Drawable.pointIntersect(obj1.x, obj1.y, obj2.x0, obj2.y0) or\
-                Drawable.pointIntersect(obj1.x, obj1.y, obj2.x1, obj2.y1)
-        elif obj2.get_type() == "Point" and obj1.get_type() == "Segment":
-            return Drawable.pointIntersect(obj2.x, obj2.y, obj1.x0, obj1.y0) or\
-                Drawable.pointIntersect(obj2.x, obj2.y, obj1.x1, obj1.y1)
-        else:
-            return False
-    @staticmethod
-    def pointIntersect(x0, y0, x1, y1):
-        return x0 == x1 and y0 == y1
     def setX(self, newX):
         self.x = newX
     def setY(self, newY):
@@ -62,22 +80,6 @@ class Drawable(object):
         pass
     def makeSym(self,prefix=""):
         return Symbol(prefix + "_" + self.objId)
-    @staticmethod
-    def makeDiagram(drawables):
-        drawingToNode = {}
-        diagram = {}
-        for obj in drawables:
-            node = obj.translate()
-            drawingToNode[obj] = node
-            diagram[node] = set()
-        unvisited = copy.copy(drawables)
-        for obj in drawables:
-            for obj2 in unvisited:
-                if Drawable.intersects(obj, obj2):
-                    diagram[drawingToNode[obj]].add(drawingToNode[obj2])
-                    diagram[drawingToNode[obj2]].add(drawingToNode[obj])
-            unvisited.pop(obj)
-        return diagram
 
 # parameters:
 # surface: to be drawn on
