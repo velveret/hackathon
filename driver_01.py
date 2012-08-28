@@ -12,7 +12,7 @@ from Physics_Calculator import *
 
 class Driver:
     @staticmethod
-    def drive(Diagram):
+    def drive(Diagram, varList):
         # Declare nodes
         # n1 = Segment(sp.Symbol('x_1'),sp.Symbol('y_1'),sp.Symbol('xd_1'),sp.Symbol('yd_1'),sp.Symbol('th_1'),sp.Symbol('thd_1'),"1", 1.0,1.0,0.5,1.0,True)
         # n2 = Segment(sp.Symbol('x_2'),sp.Symbol('y_2'),sp.Symbol('xd_2'),sp.Symbol('yd_2'),sp.Symbol('th_2'),sp.Symbol('thd_2'),"2", 1.0,1.0,0.5,1.0,False)
@@ -23,7 +23,8 @@ class Driver:
         # Rewrite the coordinates of the nodes in terms of the 
         # generalized coordinates
         
-#        print Diagram        
+#        print Diagram      
+#        print varList
         
         head = find_head(Diagram)
         dfs(Diagram, head)

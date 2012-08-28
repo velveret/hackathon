@@ -33,8 +33,10 @@ class StaticDrawing():
     def makeDiagram(drawables, origin):
         drawingToNode = {}
         diagram = {}
+        varList = []
         for obj in drawables:
-            node = obj.translate(origin)
+            node, newVars = obj.translate(origin)
+            varList.extend(newVars)
             drawingToNode[obj] = node
             diagram[node] = set()
         unvisited = copy.copy(drawables)
@@ -44,7 +46,7 @@ class StaticDrawing():
                     diagram[drawingToNode[obj]].add(drawingToNode[obj2])
                     diagram[drawingToNode[obj2]].add(drawingToNode[obj])
             unvisited.remove(obj)
-        return diagram
+        return diagram, varList
 
 class Drawable(object):
     __metaclass__ = ABCMeta
@@ -108,10 +110,11 @@ class Point(Drawable):
         self.r = newR
     def translate(self, origin):
         if self.fixed:
-            return Mass(self.x-origin[0], self.y-origin[1], 0, 0,self.objId, self.m, self.fixed)
+            return Mass(self.x-origin[0], self.y-origin[1], 0, 0,self.objId, self.m, self.fixed), []
         else:
-            return Mass(self.makeSym("x"), self.makeSym("y"), self.makeSym("xd"),\
+            node = Mass(self.makeSym("x"), self.makeSym("y"), self.makeSym("xd"),\
             self.makeSym("yd"),self.objId, self.m, self.fixed)
+            return node, [(node.x, node.xd), (node.y, node.yd)]
 
 # parameters:
 # surface: to be drawn on
@@ -196,10 +199,11 @@ class Segment(Drawable):
             self.setX1(newX)
             self.setY1(newY)
     def translate(self, origin):
-        return node_02.Segment(self.makeSym("x"), self.makeSym("y"),\
+        node = node_02.Segment(self.makeSym("x"), self.makeSym("y"),\
             self.makeSym("xd"),self.makeSym("yd"),self.makeSym("th"),\
             self.makeSym("thd"), self.objId, self.m, self.I, self.r,\
             self.getLength(), self.fixed)
+        return node, [(node.x, node.xd), (node.y, node.yd), (node.th, node.thd)]
     @staticmethod
     def maybeValidRatio(num):
         if num >= 0.0 and num <= 1.0:
