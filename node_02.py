@@ -8,7 +8,7 @@ Created on Mon Aug 27 19:10:13 2012
 # -*- coding: utf-8 -*-
 from abc import ABCMeta
 from abc import abstractmethod
-from sympy import *
+import sympy as sp
 
 class Node(object):
     __metaclass__ = ABCMeta
@@ -55,6 +55,10 @@ class Segment(Node):
         self.L = newL
         self.th = thSym
         self.thd = thdSym
+        self.x0 = self.x + self.r*self.L* sp.cos(self.th)
+        self.y0 = self.y + self.r*self.L* sp.sin(self.th)
+        self.xf = self.x - (1-self.r)*self.L*sp.cos(self.th)
+        self.yf = self.y - (1-self.r)*self.L*sp.sin(self.th)
     def __type__(self):
         return "Segment"
 
