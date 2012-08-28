@@ -62,6 +62,7 @@ def makeOdeFunc(EL,coords):
             solveForVars.append(qdot_i)
         else:
             solveForVars.append(q_i)
+    print solveForVars
     ELMatrix=sp.Matrix(EL)
     leadingCoeffs=ELMatrix.jacobian(solveForVars)
     nonLeadingTerms=leadingCoeffs*sp.Matrix(solveForVars)-ELMatrix

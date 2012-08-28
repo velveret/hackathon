@@ -21,7 +21,7 @@ def lagrange_01(Seg):
         T = 1/2.0*Seg.m*Seg.xd**2 + 1/2.0*Seg.m*Seg.yd**2 + 1/2.0*Seg.I*Seg.thd**2
         V = Seg.m*g*Seg.y
         L = T - V
-    print L
+    #print L
     return L
 
 #Seg = Segment("1",5.0, 1.0, 0.5, 1.0) # Mass("1",5.0) # 

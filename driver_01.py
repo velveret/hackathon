@@ -9,6 +9,7 @@ from node_02 import *
 from comp_coords_01 import *
 from lagrange_01 import lagrange_01
 from Physics_Calculator import *
+import sympy as sp
 
 class Driver:
     @staticmethod
@@ -46,6 +47,10 @@ class Driver:
 #        print n1.x, "\n", n1.xd
         L = sum([lagrange_01(n) for n in dgm])
         L = sp.simplify(sp.expand(L))
+        usedSymbols=L.atoms(sp.Symbol)
+        coords=filter(lambda x: x[0] in usedSymbols or x[0] in usedSymbols, varList)
+        print coords
+        numTimeEvolve(L, coords,[1,0,1,0],tAxis)
 #        print "\n\n\nL is \n", L, "\n\n\n"
         
         # Compute and simulate differential equatoins
