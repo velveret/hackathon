@@ -114,8 +114,8 @@ class GraphicsScreen(pygame.Surface):
             
         elif buttonID == "run":
             if len(self.allGeometry) > 0:
-                diagram, varList = StaticDrawing.makeDiagram(self.allGeometry, self.origin)
-                Driver.drive(diagram, varList)
+                diagram, varList, angleDict = StaticDrawing.makeDiagram(self.allGeometry, self.origin)
+                Driver.drive(diagram, varList, angleDict)
             self.buttons["run"].setState(True)
             
     def snap(self, x, y, objToSnapTo):
