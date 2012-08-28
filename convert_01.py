@@ -8,6 +8,7 @@ Created on Mon Aug 27 17:22:17 2012
 import sympy  as sp
 
 def convert_to_red(r, L):
+    #Convert to redundant form
     th = sp.Symbol('th')
     thd= sp.Symbol('thd')
     x = r*L*sp.sin(th)
