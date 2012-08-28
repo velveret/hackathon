@@ -2,9 +2,8 @@ import pygame
 import wx
 import os
 import Buttons
-from math import pi, sin, cos, sqrt, atan2
+from math import ceil, pi, sin, cos, sqrt, atan2
 from Drawable import Point, Segment
-from copy import deepcopy
 
 #Buttons
 """ 
@@ -40,7 +39,6 @@ class GraphicsScreen(pygame.Surface):
         self.buttons = buttons
         
         self.pointAdding = False
-        self.pinAdding = False
         
         self.segmentAdding = False
         self.segmentAddingStage = 0
@@ -58,116 +56,63 @@ class GraphicsScreen(pygame.Surface):
         self.polarRSpacing = 20
         self.polarThetaSpacing = pi/12
                         
-        self.buttons["cartesianGrid"].setState(self.cartesian)
-        self.buttons["polarGrid"].setState(self.polar)
-        self.buttons["snapToGrid"].setState(self.snapGrid)
-        self.buttons["snapToPoint"].setState(self.snapPoint)
+        self.buttons[0].setState(self.cartesian)
+        self.buttons[1].setState(self.polar)
+        self.buttons[2].setState(self.snapGrid)
+        self.buttons[3].setState(self.snapPoint)
         
         self.allGeometry = []
-        self.prevGeometry = []
         
     def buttonPressed(self, buttonID):
-        if buttonID == "cartesianGrid":
+        if buttonID == 1: #Cartesian
             self.cartesian = True
             self.polar = False
-            self.buttons["cartesianGrid"].setState(True)
-            self.buttons["polarGrid"].setState(False)
+            self.buttons[0].setState(True)
+            self.buttons[1].setState(False)
             
-        elif buttonID == "polarGrid":
+        elif buttonID == 2: #Polar
             self.cartesian = False
             self.polar = True
-            self.buttons["cartesianGrid"].setState(False)
-            self.buttons["polarGrid"].setState(True)
+            self.buttons[0].setState(False)
+            self.buttons[1].setState(True)
             
-        elif buttonID == "snapToGrid":
+        elif buttonID == 3: #Snap To Grid
             self.snapGrid = not self.snapGrid
-            self.buttons["snapToGrid"].setState(self.snapGrid)
+            self.buttons[2].setState(self.snapGrid)
             
-        elif buttonID == "snapToPoint":
+        elif buttonID == 4: #Snap To Point
             self.snapPoint = not self.snapPoint
-            self.buttons["snapToPoint"].setState(self.snapPoint)
+            self.buttons[3].setState(self.snapPoint)
             
             
-        elif buttonID == "point":
+        if buttonID == 8: #Point Adding
             if self.pointAdding:
                 self.pointAdding = False
             else:
                 self.pointAdding = True
-                self.pinAdding = False
                 self.segmentAdding = False
-                self.buttons["pin"].setState(False)
-                self.buttons["segment"].setState(False)
-            self.buttons["point"].setState(self.pointAdding)
+                self.buttons[8].setState(False)
+            self.buttons[7].setState(self.pointAdding)
             
-        elif buttonID == "pin":
-            if self.pinAdding:
-                self.pinAdding = False
-            else:
-                self.pinAdding = True
-                self.segmentAdding = False
-                self.pointAdding = False
-                self.buttons["point"].setState(False)
-                self.buttons["segment"].setState(False)
-            self.buttons["pin"].setState(self.pinAdding)
-            
-        elif buttonID == "segment":
+        elif buttonID == 9: #Segment Adding
             if self.segmentAdding:
                 self.segmentAdding = False
             else:
                 self.segmentAdding = True
                 self.pointAdding = False
-                self.pinAdding = False
-                self.buttons["point"].setState(False)
-                self.buttons["pin"].setState(False)
-            self.buttons["segment"].setState(self.segmentAdding)
+                self.buttons[7].setState(False)
+            self.buttons[8].setState(self.segmentAdding)
             
-        elif buttonID == "undo":
+        elif buttonID == 10: #Undo
             if len(self.allGeometry) > 0:
-                self.allGeometry.pop()
-            elif len(self.prevGeometry) > 0:
-                for geom in self.prevGeometry:
-                    self.allGeometry.append(geom)
-                self.prevGeometry = []
-            self.buttons["undo"].setState(True)
+                self.allGeometry.pop()    
+            self.buttons[9].setState(True)
             
-        elif buttonID == "delete":
-            if len(self.allGeometry) > 0:
-                for geom in self.allGeometry:
-                    self.prevGeometry.append(geom)
-                self.allGeometry = []
-            self.buttons["delete"].setState(True)
-            
-    def snap(self, x, y, objToSnapTo):
-        snapped = False
-        if self.snapPoint:
-            for geom in self.allGeometry:
-                if isinstance(geom, objToSnapTo):
-                    if objToSnapTo == Segment:
-                        if self.dist((x,y), (geom.x0, geom.y0)) < 50 and self.dist((x,y), (geom.x1, geom.y1)) < 50:
-                            if self.dist((x,y), (geom.x0, geom.y0)) < self.dist((x,y), (geom.x1, geom.y1)):
-                                x,y = geom.x0, geom.y0
-                            else:
-                                x,y = geom.x1, geom.y1
-                            snapped = True
-                        elif self.dist((x,y), (geom.x0, geom.y0)) < 50:
-                            x,y = geom.x0, geom.y0
-                            snapped = True
-                        elif self.dist((x,y), (geom.x1, geom.y1)) < 50:
-                            x,y = geom.x1, geom.y1
-                            snapped = True
-                    else:
-                        if self.dist((x,y), (geom.x, geom.y)) < 50:
-                            x, y = geom.x, geom.y
-                            snapped = True
-                                
-        if self.snapGrid and not snapped:        
+    def snap(self, x, y):
+        if self.snapGrid:        
             if self.cartesian:
-                x -= self.cartesianOrigin[0]
-                y -= self.cartesianOrigin[1]
                 x = int(round(float(x)/self.cartesianSpacing)*self.cartesianSpacing)
                 y = int(round(float(y)/self.cartesianSpacing)*self.cartesianSpacing)
-                x += self.cartesianOrigin[0]
-                y += self.cartesianOrigin[1]
             elif self.polar:
                 r = self.dist((x,y), self.polarOrigin)
                 theta = atan2(y-self.polarOrigin[1], x-self.polarOrigin[0])
@@ -179,28 +124,19 @@ class GraphicsScreen(pygame.Surface):
         return x, y
         
     def addPoint(self, x, y):
-        x, y = self.snap(x, y, Segment)
         newPoint = Point(self, x, y)
         self.allGeometry.append(newPoint)
         
-    def addPin(self, x, y):
-        x, y = self.snap(x, y, Segment)
-        newPoint = Point(self, x, y, isFixed=True)
-        self.allGeometry.append(newPoint)
-        
     def startSegment(self, x, y):
-        x, y = self.snap(x, y, Point)
         self.currentSegment = Segment(self, x, y, x, y)
         self.segmentAddingStage = 1
         self.allGeometry.append(self.currentSegment)
     
     def updateSegment(self, x, y):
-        x, y = self.snap(x, y, Point)
         self.currentSegment.setX1(x)
         self.currentSegment.setY1(y)
         
     def finishSegment(self, x, y):
-        x, y = self.snap(x, y, Point)
         self.currentSegment.setX1(x)
         self.currentSegment.setY1(y)
         self.segmentAddingStage = 0
@@ -208,19 +144,24 @@ class GraphicsScreen(pygame.Surface):
             
     def mousePressed(self, mx, my):
         if self.pointAdding:
+            mx, my = self.snap(mx, my)
             self.addPoint(mx,my)
-        elif self.pinAdding:
-            self.addPin(mx,my)
         elif self.segmentAdding:
+            mx, my = self.snap(mx, my)
             self.startSegment(mx, my)
             
     def mouseReleased(self, mx, my):
         if self.segmentAdding and self.segmentAddingStage == 1:
+            mx, my = self.snap(mx, my)
             self.finishSegment(mx, my)
 
     def mouseMoved(self, mx, my):
         if self.segmentAdding and self.segmentAddingStage == 1:
+            mx, my = self.snap(mx, my)
             self.updateSegment(mx, my)            
+    
+    def doStuff(self):
+        pass
     
     def updateSize(self, size):
         pygame.Surface.__init__(self, size)
@@ -286,18 +227,7 @@ class GraphicsScreen(pygame.Surface):
                 pygame.draw.circle(self, (0,0,0), self.polarOrigin, cur, 1)
                 cur += self.polarRSpacing
                 
-        segments = []
-        points = []
         for drawable in self.allGeometry:
-            if isinstance(drawable, Segment):
-                segments.append(drawable)
-            else:
-                points.append(drawable)
-        
-        for drawable in segments:
-            drawable.draw()
-            
-        for drawable in points:
             drawable.draw()
     
 class PygameDisplay(wx.Window):
@@ -325,60 +255,49 @@ class PygameDisplay(wx.Window):
         
         self.buttonSpacing = 10
         
-        self.buttons = {}
+        self.buttons = []
         
         self.cartesianGridButton = Buttons.CartesianGridButton()
-        self.buttons["cartesianGrid"] = self.cartesianGridButton
-#        self.buttons.append(self.cartesianGridButton)
+        self.buttons.append(self.cartesianGridButton)
         
         self.polarGridButton = Buttons.PolarGridButton()
-        self.buttons["polarGrid"] = self.polarGridButton
-#        self.buttons.append(self.polarGridButton)
+        self.buttons.append(self.polarGridButton)
         
         self.snapToGridButton = Buttons.SnapToGridButton()
-        self.buttons["snapToGrid"] = self.snapToGridButton
-#        self.buttons.append(self.snapToGridButton)
+        self.buttons.append(self.snapToGridButton)
         
         self.snapToPointButton = Buttons.SnapToPointButton()
-        self.buttons["snapToPoint"] = self.snapToPointButton
-#        self.buttons.append(self.snapToPointButton)
+        self.buttons.append(self.snapToPointButton)
         
         self.restartButton = Buttons.RestartButton()
-        self.buttons["restart"] = self.restartButton
-#        self.buttons.append(self.restartButton)
+        self.buttons.append(self.restartButton)
         
         self.runButton = Buttons.RunButton()
-        self.buttons["run"] = self.runButton
-#        self.buttons.append(self.runButton)
+        self.buttons.append(self.runButton)
         
         self.pauseButton = Buttons.PauseButton()
-        self.buttons["pause"] = self.pauseButton
-#        self.buttons.append(self.pauseButton)
+        self.buttons.append(self.pauseButton)
                 
         self.pointButton = Buttons.PointButton()
-        self.buttons["point"] = self.pointButton
-#        self.buttons.append(self.pointButton)
+        self.buttons.append(self.pointButton)
         
         self.segmentButton = Buttons.SegmentButton()
-        self.buttons["segment"] = self.segmentButton
-#        self.buttons.append(self.segmentButton)
+        self.buttons.append(self.segmentButton)
         
         self.undoButton = Buttons.UndoButton()
-        self.buttons["undo"] = self.undoButton
-#        self.buttons.append(self.undoButton)
+        self.buttons.append(self.undoButton)
         
         self.pinButton = Buttons.PinButton()
-        self.buttons["pin"] = self.pinButton
-#        self.buttons.append(self.pinButton)
+        self.buttons.append(self.pinButton)
         
         self.deleteButton = Buttons.DeleteButton()
-        self.buttons["delete"] = self.deleteButton
-#        self.buttons.append(self.deleteButton)
-
-        self.leftButtons = ["cartesianGrid", "snapToGrid", "segment", "pin", "pause", "undo"]
-        self.rightButtons = ["polarGrid", "snapToPoint", "point", "run", "restart", "delete"]
-                                
-        self.buttonSize = (self.size[1]-20) / max(len(self.leftButtons), len(self.rightButtons))
+        self.buttons.append(self.deleteButton)
+        
+        numButtons = len(self.buttons)
+                
+        self.buttonsOnLeft = int(ceil(numButtons/2.0))
+        
+        self.buttonSize = (self.size[1]-20) / self.buttonsOnLeft
         
         self.buttonSize -= self.buttonSpacing        
         
@@ -391,20 +310,20 @@ class PygameDisplay(wx.Window):
         self.leftPanelPos = (0,0)
         
         self.rightPanel = pygame.Surface((int(self.buttonSize*1.2), self.size[1]))
-        self.rightPanelPos = (int(self.buttonSize*1.2),0)
+        self.rightPanelPos = (self.size[0]-self.rightPanel.get_size()[0],0)
         
-        self.graphicsPos =  (self.leftPanel.get_size()[0] + self.rightPanel.get_size()[0],0)
+        self.graphicsPos =  (self.leftPanel.get_size()[0],0)
         self.graphicsSize = (self.size[0] - 2*int(self.buttonSize*1.2), self.size[1])
         self.graphics.updateSize(self.graphicsSize)
         
         cur = 0
-        for key in self.leftButtons:
-            self.buttons[key].setPos(self.leftPanel, self.leftPanelPos[0], self.leftPanelPos[1], 0, cur, self.buttonSize, self.buttonSize)
+        for i in range(self.buttonsOnLeft):
+            self.buttons[i].setPos(self.leftPanel, self.leftPanelPos[0], self.leftPanelPos[1], 0, cur, self.buttonSize, self.buttonSize)
             cur += self.buttonSize + self.buttonSpacing
         
         cur = 0
-        for key in self.rightButtons:
-            self.buttons[key].setPos(self.rightPanel, self.rightPanelPos[0], self.rightPanelPos[1], 0, cur, self.buttonSize, self.buttonSize)
+        for i in range(self.buttonsOnLeft, len(self.buttons)):
+            self.buttons[i].setPos(self.rightPanel, self.rightPanelPos[0], self.rightPanelPos[1], int(self.buttonSize*0.2), cur, self.buttonSize, self.buttonSize)
             cur += self.buttonSize + self.buttonSpacing
  
     def update(self, event):
@@ -427,17 +346,12 @@ class PygameDisplay(wx.Window):
         if (mx >= self.graphicsPos[0] and mx <= self.graphicsPos[0]+self.graphicsSize[0]) and (my >= self.graphicsPos[1] and my <= self.graphicsPos[1]+self.graphicsSize[1]):
             self.graphics.mousePressed(mx-self.graphicsPos[0], my-self.graphicsPos[1])
         else:
-            for buttonKey in self.buttons.keys():
-                buttonID = self.buttons[buttonKey].testButton(mx, my)
+            for button in self.buttons:
+                buttonID = button.testButton(mx, my)
                 if buttonID != 0:
                     self.graphics.buttonPressed(buttonID)
         
     def onMouseReleased(self):
-        self.buttons["undo"].setState(False)
-        self.buttons["delete"].setState(False)
-        self.buttons["restart"].setState(False)
-        
-        
         (mx, my) = pygame.mouse.get_pos()
         
         if (mx >= self.graphicsPos[0] and mx <= self.graphicsPos[0]+self.graphicsSize[0]) and (my >= self.graphicsPos[1] and my <= self.graphicsPos[1]+self.graphicsSize[1]):
@@ -460,8 +374,8 @@ class PygameDisplay(wx.Window):
         self.rightPanel.fill((200,200,200))
         
                 
-        for buttonKey in self.buttons.keys():
-            self.buttons[buttonKey].draw()    
+        for button in self.buttons:
+            button.draw()    
         
         self.screen.blit(self.leftPanel, (0,0))
         self.screen.blit(self.rightPanel, self.rightPanelPos)
