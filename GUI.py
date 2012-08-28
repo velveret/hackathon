@@ -138,15 +138,36 @@ class GraphicsScreen(pygame.Surface):
             self.buttons["delete"].setState(True)
             
     def snap(self, x, y, objToSnapTo):
+        snapped = False
         if self.snapPoint:
             for geom in self.allGeometry:
                 if isinstance(geom, objToSnapTo):
-                    
-        
-        if self.snapGrid:        
+                    if objToSnapTo == Segment:
+                        if self.dist((x,y), (geom.x0, geom.y0)) < 50 and self.dist((x,y), (geom.x1, geom.y1)) < 50:
+                            if self.dist((x,y), (geom.x0, geom.y0)) < self.dist((x,y), (geom.x1, geom.y1)):
+                                x,y = geom.x0, geom.y0
+                            else:
+                                x,y = geom.x1, geom.y1
+                            snapped = True
+                        elif self.dist((x,y), (geom.x0, geom.y0)) < 50:
+                            x,y = geom.x0, geom.y0
+                            snapped = True
+                        elif self.dist((x,y), (geom.x1, geom.y1)) < 50:
+                            x,y = geom.x1, geom.y1
+                            snapped = True
+                    else:
+                        if self.dist((x,y), (geom.x, geom.y)) < 50:
+                            x, y = geom.x, geom.y
+                            snapped = True
+                                
+        if self.snapGrid and not snapped:        
             if self.cartesian:
+                x -= self.cartesianOrigin[0]
+                y -= self.cartesianOrigin[1]
                 x = int(round(float(x)/self.cartesianSpacing)*self.cartesianSpacing)
                 y = int(round(float(y)/self.cartesianSpacing)*self.cartesianSpacing)
+                x += self.cartesianOrigin[0]
+                y += self.cartesianOrigin[1]
             elif self.polar:
                 r = self.dist((x,y), self.polarOrigin)
                 theta = atan2(y-self.polarOrigin[1], x-self.polarOrigin[0])

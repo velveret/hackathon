@@ -63,8 +63,8 @@ class Point(Drawable):
     def draw(self):
         if self.isFixed:
             pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
-            pg.draw.line(self.surface, (255,0,0), (self.x-self.r, self.y), (self.x+self.r, self.y))
-            pg.draw.line(self.surface, (255,0,0), (self.x, self.y-self.r), (self.x, self.y+self.r))
+            pg.draw.line(self.surface, (255,0,0), (self.x-self.r, self.y), (self.x+self.r, self.y), 3)
+            pg.draw.line(self.surface, (255,0,0), (self.x, self.y-self.r), (self.x, self.y+self.r), 3)
         else:
             pg.draw.circle(self.surface, blackColor, (self.x, self.y), self.r)
     def setR(self, newR):
