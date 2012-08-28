@@ -62,9 +62,11 @@ def makeOdeFunc(EL,coords):
             solveForVars.append(qdot_i)
         else:
             solveForVars.append(q_i)
-    solvedVars=sp.solve(EL,solveForVars)
-    if not solvedVars:
-        raise Exception("No solutions for accelerations")
+    ELMatrix=sp.Matrix(EL)
+    leadingCoeffs=ELMatrix.jacobian(solveForVars)
+    nonLeadingTerms=leadingCoeffs*sp.Matrix(solveForVars)-ELMatrix
+    nonLeadingTerms=sp.Matrix([sp.simplify(term) for term in nonLeadingTerms])
+    solvedVars=leadingCoeffs.inv()*nonLeadingTerms
     funcList=[]
     inputs=[]
     for (i,((q_i,qdot_i),qdotdot_i)) in enumerate(zip(coords,qdotdot)):
@@ -78,10 +80,10 @@ def makeOdeFunc(EL,coords):
         if qdotdot_i in solveForVars:
             funcList.append((lambda i: lambda x:x[i])(i))
             funcList.append((lambda f: lambda x: f(*x))(sp.lambdify(inputs,
-                    solvedVars[qdotdot_i])))
+                    solvedVars[i])))
         elif qdot_i in solveForVars:
             funcList.append(sp.lambdify(inputs,
-                    solvedVars[qdot_i]))
+                    solvedVars[i]))
     def odeFunc(coords,t=None):
          """
          Takes a list of coordinates of the form [x,xdot,y,ydot]
