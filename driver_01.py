@@ -53,7 +53,8 @@ class Driver:
         #print angleDict
         print calcEL(L, coords)
         initialConditions=[(angleDict[q],0) for (q,qdot) in coords]
-        trajectory=numTimeEvolve(L, coords,initialConditions,np.linspace(0,50,10000))
+        trajectory=numTimeEvolve(L, coords,initialConditions,np.linspace(0,1000,10000))
+        return trajectory
 #        print "\n\n\nL is \n", L, "\n\n\n"
         
         # Compute and simulate differential equatoins

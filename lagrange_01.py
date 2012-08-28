@@ -10,7 +10,7 @@ import sympy  as sp
 from node_02 import *
 
 def lagrange_01(Seg):
-    g = 1 
+    g = -1 
     
     # Checks the type
     if Seg.get_type() == "Mass":

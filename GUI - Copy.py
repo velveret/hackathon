@@ -54,7 +54,7 @@ class GraphicsScreen(pygame.Surface):
         self.anim = AnimationPositions()
         self.runningSimulation = True
         
-        self.geom = self.anim.dfs(self.diagram, self.anim.find_head(self.diagram), self.traj, self.varList, self.runningGeometry, self.origin)
+        self.geom = 
 
 #        for geom in anim.dfs(self.diagram, anim.find_head(self.diagram), self.traj, self.varList, self.runningGeometry, self.origin):
 #            print geom
@@ -63,13 +63,9 @@ class GraphicsScreen(pygame.Surface):
 #            self.draw(geom)
 
     def simulationFrame(self):
-        try:
-            self.runningGeometry = self.geom.next()
-        except:
-            self.runningSimulation = False
-            return
-        print self.runningGeometry
-        for node in self.runningGeometry:
+        self.geom = self.anim.dfs(self.diagram, self.anim.find_head(self.diagram), self.traj, self.varList, self.runningGeometry, self.origin)
+        print self.geom
+        for node in self.geom:
             print node.__dict__
 #        self.draw(geom)            
     
@@ -319,7 +315,7 @@ class GraphicsScreen(pygame.Surface):
                 drawable.draw()
         else:
             print "drawing new geom"
-            for drawable in self.runningGeometry:
+            for drawable in self.geom:
                 drawable.draw()
     
 class PygameDisplay(wx.Window):

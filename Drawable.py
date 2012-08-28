@@ -9,7 +9,7 @@ from sympy import Symbol
 import node_02
 import copy
 
-blackColor = pg.Color(0, 0, 0)
+blackColor = pg.Color(0, 0, 100)
 blueColor = pg.Color(0, 0, 255)
 whiteColor = pg.Color(255, 255, 255)
 currentId = 0
