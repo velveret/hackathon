@@ -1,7 +1,11 @@
 import pygame
 
 class Button:
-#    def __init__(self, ):
+    def __init__(self):
+        if self.active:
+            self.backColor = (0,0,255)
+        else:
+            self.backColor = (255,0,0)
         
     def setPos(self, parentSurface, panelx, panely, x, y, w, h, align="left"):
         ratio = 0.9
@@ -15,11 +19,12 @@ class Button:
 #        print "Added at", x, y
         self.icon = pygame.transform.smoothscale(self.icon, (int(w*ratio), int(h*ratio)))
         self.back = pygame.Surface((w,h))
-        pygame.draw.rect(self.back, (255,0,0), (0,0,w,h))
+        self.back.fill(self.backColor)
         self.actualx = panelx + x
         self.actualy = panely + y
     
     def draw(self):
+        self.back.fill(self.backColor)
         self.parentSurface.blit(self.back, (self.backx, self.backy))
         self.parentSurface.blit(self.icon, (self.iconx, self.icony))
         
@@ -29,21 +34,79 @@ class Button:
         ymin = self.actualy
         ymax = ymin + self.h
         if (mx >= xmin and mx <= xmax) and (my >= ymin and my <= ymax):
-            return True
+            return self.ID
+        else:
+            return 0
+            
+    def setState(self, active):
+        print "Changing State"
+        if active:
+            self.active = True
+            self.backColor = (0,0,255)
+        else:
+            self.active = False
+            self.backColor = (255,0,0)
 
 
 class CartesianGridButton(Button):
     def __init__(self):
-        self.icon = pygame.image.load('images/gridIcon.png').convert()        
+        self.active = True
+        self.icon = pygame.image.load('images/gridIcon.png').convert()
+        self.ID = 1
+        Button.__init__(self)
         
 class PolarGridButton(Button):
     def __init__(self):
+        self.active = False
         self.icon = pygame.image.load('images/polarIcon.png').convert()
+        self.ID = 2
+        Button.__init__(self)
         
 class SnapToGridButton(Button):
     def __init__(self):
+        self.active = False
         self.icon = pygame.image.load('images/snapIcon.png').convert()
+        self.ID = 3
+        Button.__init__(self)
         
 class RunButton(Button):
     def __init__(self):
+        self.active = False
         self.icon = pygame.image.load('images/runIcon.png').convert()
+        self.ID = 4
+        Button.__init__(self)
+        
+class PauseButton(Button):
+    def __init__(self):
+        self.active = False
+        self.icon = pygame.image.load('images/pauseIcon.png').convert()
+        self.ID = 5
+        Button.__init__(self)
+        
+class RestartButton(Button):
+    def __init__(self):
+        self.active = False
+        self.icon = pygame.image.load('images/restartIcon.png').convert()
+        self.ID = 6
+        Button.__init__(self)
+        
+class PointButton(Button):
+    def __init__(self):
+        self.active = False
+        self.icon = pygame.image.load('images/pointIcon.png').convert()
+        self.ID = 7
+        Button.__init__(self)
+        
+class SegmentButton(Button):
+    def __init__(self):
+        self.active = False
+        self.icon = pygame.image.load('images/segmentIcon.png').convert()
+        self.ID = 8
+        Button.__init__(self)
+        
+class UndoButton(Button):
+    def __init__(self):
+        self.active = False
+        self.icon = pygame.image.load('images/undoIcon.png').convert()
+        self.ID = 9
+        Button.__init__(self)
