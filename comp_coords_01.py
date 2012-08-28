@@ -7,6 +7,7 @@ Created on Mon Aug 27 18:42:43 2012
 
 from node_02 import *
 import sympy as sp
+import copy
 
 # Given dictionary (graph), compute coordinates of nodes
 #def comp_coords_01(diagram, nodeSet):
@@ -20,7 +21,7 @@ def find_head(diagram):
     return diagram.keys()[0]
 
 def get_unvisited(diagram, visited):
-    diagramCopy = copy.deepCopy(diagram)
+    diagramCopy = copy.copy(diagram)
     for node in visited:
         del diagramCopy[node]
     return find_head(diagramCopy)
@@ -33,8 +34,9 @@ def dfs(diagram, head):
     parents[head] = None
     while len(visited) < len(diagram.keys()):
         if len(next) == 0:
-            next.append(get_unvisited(diagram, visited))
-            parents[head] = None
+            newHead = get_unvisited(diagram, visited)
+            next.append(newHead)
+            parents[newHead] = None
             continue
         else:
             current = next.pop()
